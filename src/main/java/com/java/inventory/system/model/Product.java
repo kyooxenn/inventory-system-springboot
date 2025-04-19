@@ -1,8 +1,6 @@
 package com.java.inventory.system.model;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +11,7 @@ import lombok.Data;
 public class Product {
     @Id
     private Long id;
-    private String name;
+    private String productName;
     private String description;
     private String productType;
     private int quantity;
@@ -22,9 +20,9 @@ public class Product {
     public Product() {
     }
 
-    public Product(Long id, String name, String description, String productType, int quantity, double unitPrice) {
+    public Product(Long id, String productName, String description, String productType, int quantity, double unitPrice) {
         this.id = id;
-        this.name = name;
+        this.productName = productName;
         this.description = description;
         this.productType = productType;
         this.quantity = quantity;

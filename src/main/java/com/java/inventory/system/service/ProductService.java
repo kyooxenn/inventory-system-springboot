@@ -32,14 +32,14 @@ public class ProductService {
 
     public Product createProduct(ProductRequest request) {
 
-        productRepository.findByProductName(request.getName())
+        productRepository.findByProductName(request.getProductName())
                 .ifPresent(product -> {
                     throw new ProductException(INVENTORY_MS_ERR_CODE_002, INVENTORY_MS_PRODUCT_EXIST);
                 });
 
         Product newProduct = Product.builder()
                 .id(ProductIdGenerator.generateId())
-                .name(request.getName())
+                .productName(request.getProductName())
                 .description(request.getDescription())
                 .productType(request.getProductType())
                 .unitPrice(request.getUnitPrice())
@@ -57,7 +57,7 @@ public class ProductService {
         log.info("product found! {}", product);
 
         // Update the fields of the existing product
-        product.setName(request.getName());
+        product.setProductName(request.getProductName());
         product.setDescription(request.getDescription());
         product.setProductType(request.getProductType());
         product.setQuantity(request.getQuantity());
