@@ -280,7 +280,7 @@ components:
     ProductRequest:
       type: object
       properties:
-        name:
+        productName:
           type: string
         description:
           type: string
@@ -296,7 +296,7 @@ components:
           minimum: 0
       required:
       - description
-      - name
+      - productName
       - productType
       - quantity
       - unitPrice
@@ -306,7 +306,7 @@ components:
         id:
           type: integer
           format: int64
-        name:
+        productName:
           type: string
         description:
           type: string

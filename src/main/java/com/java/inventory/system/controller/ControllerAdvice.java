@@ -1,105 +1,60 @@
 package com.java.inventory.system.controller;
 
-import com.java.inventory.system.exception.ProductException;
+import com.java.inventory.system.exception.ExceptionResponse;
+import com.java.inventory.system.exception.ProductSvcException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
 
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.time.Instant;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice(assignableTypes = {ProductController.class})
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class ControllerAdvice {
 
-    /**
-     * Helper method to build the common error response structure.
-     */
-    private Map<String, Object> buildErrorResponse(HttpStatus status, String errorMessage, Map<String, Object> extraData) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("uniqueId", "error-" + UUID.randomUUID().toString());
-        response.put("timestamp", LocalDateTime.now().toString());
-        response.put("status", status.name());
-        response.put("httpCode", status.value());
-        response.put("error", errorMessage);
+    @ExceptionHandler(ProductSvcException.class)
+    public final ResponseEntity<ExceptionResponse> handleProductSvcException(ProductSvcException ex, WebRequest request) {
+        log.error("Exception occurred: {} - {}", ex.getError().getCode(), ex.getMessage());
 
-        // In a real-world application, you might integrate a tracing system to get an actual trace ID.
-        response.put("traceId", UUID.randomUUID().toString());
+        ExceptionResponse response = ExceptionResponse.builder()
+                .errorCode(ex.getError().getCode())
+                .errorMessage(ex.getError().getDesc())
+                .exceptionType(ex.getClass().getSimpleName())
+                .timestamp(Instant.now().toString())  // Automatically add time
+                .path(request.getDescription(false)) // API endpoint or request description
+                .build();
 
-        if (extraData != null) {
-            response.putAll(extraData);
-        }
-        return response;
+        return new ResponseEntity<>(response, ex.getError().getHttpStatusCode());
     }
 
-    // Handler for validation errors (400 Bad Request)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationException(MethodArgumentNotValidException ex) {
-        Map<String, String> fieldErrors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(error ->
-                fieldErrors.put(error.getField(), error.getDefaultMessage())
-        );
-        Map<String, Object> extraData = new HashMap<>();
-        extraData.put("errors", fieldErrors);
+    public final ResponseEntity<ExceptionResponse> handleValidationExceptions(MethodArgumentNotValidException ex, WebRequest request) {
+        List<String> validationErrors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(Collectors.toList());
 
-        Map<String, Object> response = buildErrorResponse(HttpStatus.BAD_REQUEST, "Validation failed", extraData);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        log.error("Validation error occurred: {}", validationErrors);
+
+        ExceptionResponse response = ExceptionResponse.builder()
+                .errorCode("VALIDATION_ERROR")
+                .errorMessage("Validation failed for one or more fields.")
+                .exceptionType(ex.getClass().getSimpleName())
+                .timestamp(Instant.now().toString())
+                .path(request.getDescription(false))
+                .details(validationErrors) // Capture multiple validation errors
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
-
-    // Handler for ProductException (404 Not Found)
-    @ExceptionHandler(ProductException.class)
-    public ResponseEntity<Map<String, Object>> handleProductException(ProductException ex) {
-        Map<String, Object> response = buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), null);
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-    }
-
-    // Generic handler for all other exceptions (500 Internal Server Error)
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex) {
-        log.error("Unhandled exception caught", ex);
-        Map<String, Object> response = buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", null);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-    }
-
-
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Map<String, Object>> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
-        Map<String, Object> errorResponse = new HashMap<>();
-
-        errorResponse.put("timestamp", LocalDateTime.now().toString());
-        errorResponse.put("status", HttpStatus.BAD_REQUEST.value());
-        errorResponse.put("error", "Bad Request");
-
-        // Get the detailed technical message from the exception
-        String technicalMessage = ex.getMostSpecificCause().getMessage();
-
-        // Use regex to extract all field names referenced in the error message (e.g., ["quantity"], ["unitPrice"])
-        Pattern pattern = Pattern.compile("\\[\"(.*?)\"\\]");
-        Matcher matcher = pattern.matcher(technicalMessage);
-        List<String> fields = new ArrayList<>();
-        while (matcher.find()) {
-            fields.add(matcher.group(1));
-        }
-
-        String userFriendlyMessage;
-        if (!fields.isEmpty()) {
-            userFriendlyMessage = "Invalid input for field(s): " + String.join(", ", fields) +
-                    ". Please ensure they have valid numeric values.";
-        } else {
-            userFriendlyMessage = "The JSON request is invalid. Please check that all numeric fields have valid numeric values.";
-        }
-        errorResponse.put("message", userFriendlyMessage);
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
-
 }

@@ -1,6 +1,7 @@
 package com.java.inventory.system.controller;
 
 import com.java.inventory.system.dto.ProductRequest;
+import com.java.inventory.system.exception.ProductSvcException;
 import com.java.inventory.system.model.Product;
 import com.java.inventory.system.service.ProductService;
 import jakarta.validation.Valid;
@@ -38,12 +39,13 @@ public class ProductController implements ProductApi {
     }
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE)
-    public ResponseEntity<Product> createProduct(@Valid @RequestBody ProductRequest request) {
+    public ResponseEntity<Product> createProduct(@Valid @RequestBody ProductRequest request) throws ProductSvcException {
         return ResponseEntity.ok(productService.createProduct(request));
     }
 
     @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request) {
+    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request)
+            throws ProductSvcException {
         return ResponseEntity.ok(productService.updateProduct(id, request));
     }
 

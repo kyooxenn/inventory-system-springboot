@@ -3,6 +3,7 @@ package com.java.inventory.system.controller;
 import com.java.inventory.system.apidocs.ApiDocAllErrorsResponse;
 import com.java.inventory.system.apidocs.ApiDocSuccessResponse;
 import com.java.inventory.system.dto.ProductRequest;
+import com.java.inventory.system.exception.ProductSvcException;
 import com.java.inventory.system.model.Product;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -28,12 +29,12 @@ public interface ProductApi {
     @Operation(description = "Create new product", tags = {"Add Product"})
     @ApiDocSuccessResponse
     @ApiDocAllErrorsResponse
-    ResponseEntity<Product> createProduct(@Valid @RequestBody ProductRequest request);
+    ResponseEntity<Product> createProduct(@Valid @RequestBody ProductRequest request) throws ProductSvcException;
 
     @Operation(description = "Update product", tags = {"Update product"})
     @ApiDocSuccessResponse
     @ApiDocAllErrorsResponse
-    ResponseEntity<Product> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request);
+    ResponseEntity<Product> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request) throws ProductSvcException;
 
     @Operation(description = "Delete product", tags = {"delete product"})
     @ApiDocSuccessResponse

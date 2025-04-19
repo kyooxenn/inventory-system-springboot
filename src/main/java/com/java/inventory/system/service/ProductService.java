@@ -1,7 +1,8 @@
 package com.java.inventory.system.service;
 
 import com.java.inventory.system.dto.ProductRequest;
-import com.java.inventory.system.exception.ProductException;
+import com.java.inventory.system.exception.ProductSvcException;
+import com.java.inventory.system.exception.errortypes.ProductSvcErrorType;
 import com.java.inventory.system.model.Product;
 import com.java.inventory.system.repository.ProductRepository;
 import com.java.inventory.system.util.ProductIdGenerator;
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
-import static com.java.inventory.system.constant.ErrorConstants.*;
+import static com.java.inventory.system.exception.errortypes.ProductSvcErrorType.ERR_INVENTORY_MS_NO_PRODUCT_FOUND;
 
 @Slf4j
 @Service
@@ -30,11 +31,10 @@ public class ProductService {
         return productRepository.findById(id);
     }
 
-    public Product createProduct(ProductRequest request) {
-
+    public Product createProduct(ProductRequest request) throws ProductSvcException {
         productRepository.findByProductName(request.getProductName())
-                .ifPresent(product -> {
-                    throw new ProductException(INVENTORY_MS_ERR_CODE_002, INVENTORY_MS_PRODUCT_EXIST);
+                .ifPresent(p -> {
+                    throw new ProductSvcException(ProductSvcErrorType.ERR_INVENTORY_MS_PRODUCT_EXIST);
                 });
 
         Product newProduct = Product.builder()
@@ -45,14 +45,14 @@ public class ProductService {
                 .unitPrice(request.getUnitPrice())
                 .quantity(request.getQuantity())
                 .build();
+
         return productRepository.save(newProduct);
     }
 
-    public Product updateProduct(Long id, ProductRequest request) {
+    public Product updateProduct(Long id, ProductRequest request) throws ProductSvcException {
         log.info("fetch product...");
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ProductException(INVENTORY_MS_ERR_CODE_001,
-                        INVENTORY_MS_NO_PRODUCT_FOUND));
+                .orElseThrow(() -> new ProductSvcException(ERR_INVENTORY_MS_NO_PRODUCT_FOUND));
 
         log.info("product found! {}", product);
 
