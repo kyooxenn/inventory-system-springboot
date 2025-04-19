@@ -34,7 +34,7 @@ public class ProductService {
 
         productRepository.findByProductName(request.getName())
                 .ifPresent(product -> {
-                    throw new ProductException(INVENTORY_MS_ERR_CODE_002, INVENTORY_MS_NO_PRODUCT_EXIST);
+                    throw new ProductException(INVENTORY_MS_ERR_CODE_002, INVENTORY_MS_PRODUCT_EXIST);
                 });
 
         Product newProduct = Product.builder()
