@@ -17,7 +17,7 @@ import java.util.Map;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping(value = "/v1/product", produces = APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
@@ -31,7 +31,7 @@ public class ProductController implements ProductApi {
         return ResponseEntity.ok(productService.getAllProducts());
     }
 
-    @GetMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{id}")
     public ResponseEntity<Product> getProduct(@PathVariable Long id) {
         return productService.getProductById(id)
                 .map(ResponseEntity::ok)
@@ -49,7 +49,7 @@ public class ProductController implements ProductApi {
         return ResponseEntity.ok(productService.updateProduct(id, request));
     }
 
-    @DeleteMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
+    @DeleteMapping(value = "/{id}")
     public ResponseEntity<Map<String, String>> deleteProduct(@PathVariable Long id) {
         return productService.deleteProduct(id) ? ResponseEntity.ok(Map.of("message", "Product deleted successfully.")) :
                 ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Product with id " + id + " not found."));
