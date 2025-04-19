@@ -31,9 +31,14 @@ public class ProductController implements ProductApi {
         return ResponseEntity.ok(productService.getAllProducts());
     }
 
-    @GetMapping(value = "/{productName}")
+    @GetMapping(value = "/name/{productName}")
     public ResponseEntity<List<Product>> getProduct(@PathVariable String productName) {
         return ResponseEntity.ok(productService.getProductByProductName(productName));
+    }
+
+    @GetMapping(value = "/id/{id}")
+    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.getProductById(id));
     }
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE)

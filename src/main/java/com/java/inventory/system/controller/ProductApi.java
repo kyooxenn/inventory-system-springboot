@@ -26,6 +26,11 @@ public interface ProductApi {
     @ApiDocAllErrorsResponse
     ResponseEntity<List<Product>> getProduct(@PathVariable String productName);
 
+    @Operation(description = "Get Product", tags = {"Products Inquiry"})
+    @ApiDocSuccessResponse
+    @ApiDocAllErrorsResponse
+    ResponseEntity<Product> getProductById(@PathVariable Long id);
+
     @Operation(description = "Create new product", tags = {"Add Product"})
     @ApiDocSuccessResponse
     @ApiDocAllErrorsResponse

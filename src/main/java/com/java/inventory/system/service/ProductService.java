@@ -29,6 +29,10 @@ public class ProductService {
         return productRepository.findByProductNameLike(productName);
     }
 
+    public Product getProductById(Long id) {
+        return productRepository.findById(id).get();
+    }
+
     public Product createProduct(ProductRequest request) throws ProductSvcException {
         productRepository.findByProductName(request.getProductName())
                 .ifPresent(p -> {
