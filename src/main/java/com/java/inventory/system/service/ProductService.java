@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 import static com.java.inventory.system.exception.errortypes.ProductSvcErrorType.ERR_INVENTORY_MS_NO_PRODUCT_FOUND;
 
@@ -28,9 +27,8 @@ public class ProductService {
 
 
     public Product getProductByProductName(String productName) {
-        Product product = productRepository.findByProductName(productName)
+        return productRepository.findByProductName(productName)
                 .orElseThrow(() -> new ProductSvcException(ERR_INVENTORY_MS_NO_PRODUCT_FOUND));
-        return product;
     }
 
     public Product createProduct(ProductRequest request) throws ProductSvcException {
