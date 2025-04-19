@@ -32,7 +32,7 @@ public class ProductController implements ProductApi {
     }
 
     @GetMapping(value = "/{productName}")
-    public ResponseEntity<Product> getProduct(@PathVariable String productName) {
+    public ResponseEntity<List<Product>> getProduct(@PathVariable String productName) {
         return ResponseEntity.ok(productService.getProductByProductName(productName));
     }
 

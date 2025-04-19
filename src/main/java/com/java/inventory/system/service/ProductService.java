@@ -25,10 +25,8 @@ public class ProductService {
         return productRepository.findAll();
     }
 
-
-    public Product getProductByProductName(String productName) {
-        return productRepository.findByProductName(productName)
-                .orElseThrow(() -> new ProductSvcException(ERR_INVENTORY_MS_NO_PRODUCT_FOUND));
+    public List<Product> getProductByProductName(String productName) {
+        return productRepository.findByProductNameLike(productName);
     }
 
     public Product createProduct(ProductRequest request) throws ProductSvcException {

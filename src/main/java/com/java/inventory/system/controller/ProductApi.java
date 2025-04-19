@@ -24,7 +24,7 @@ public interface ProductApi {
     @Operation(description = "Get Product", tags = {"Products Inquiry"})
     @ApiDocSuccessResponse
     @ApiDocAllErrorsResponse
-    ResponseEntity<Product> getProduct(@PathVariable String productName);
+    ResponseEntity<List<Product>> getProduct(@PathVariable String productName);
 
     @Operation(description = "Create new product", tags = {"Add Product"})
     @ApiDocSuccessResponse
