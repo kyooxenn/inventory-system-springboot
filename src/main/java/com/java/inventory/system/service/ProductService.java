@@ -27,8 +27,10 @@ public class ProductService {
     }
 
 
-    public Optional<Product> getProductById(Long id) {
-        return productRepository.findById(id);
+    public Product getProductByProductName(String productName) {
+        Product product = productRepository.findByProductName(productName)
+                .orElseThrow(() -> new ProductSvcException(ERR_INVENTORY_MS_NO_PRODUCT_FOUND));
+        return product;
     }
 
     public Product createProduct(ProductRequest request) throws ProductSvcException {

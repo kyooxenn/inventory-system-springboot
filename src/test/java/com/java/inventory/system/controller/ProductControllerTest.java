@@ -61,9 +61,9 @@ class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("Retrieve a single product by ID")
+    @DisplayName("Retrieve a single product by product name")
     void getProduct() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/v1/product/167794255273984")
+        mockMvc.perform(MockMvcRequestBuilders.get("/v1/product/Steam Deck")
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andDo(print());
