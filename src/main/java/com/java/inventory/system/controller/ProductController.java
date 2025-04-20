@@ -16,8 +16,7 @@ import java.util.Map;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-//@CrossOrigin(origins = "http://localhost:3000")
-@CrossOrigin(origins = "https://react-inventory-system.onrender.com/")
+@CrossOrigin
 @RestController
 @RequestMapping(value = "/v1/product", produces = APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
