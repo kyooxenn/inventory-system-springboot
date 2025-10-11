@@ -58,6 +58,11 @@ public class ProductService {
 
         log.info("product found! {}", product);
 
+        productRepository.findByProductName(product.getProductName())
+                .ifPresent(p -> {
+                    throw new ProductSvcException(ProductSvcErrorType.ERR_INVENTORY_MS_PRODUCT_EXIST);
+                });
+
         // Update the fields of the existing product
         product.setProductName(request.getProductName());
         product.setDescription(request.getDescription());
