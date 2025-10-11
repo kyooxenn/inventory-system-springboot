@@ -58,7 +58,7 @@ public class ProductService {
 
         log.info("product found! {}", product);
 
-        productRepository.findByProductName(product.getProductName())
+        productRepository.findByProductName(request.getProductName())
                 .ifPresent(p -> {
                     throw new ProductSvcException(ProductSvcErrorType.ERR_INVENTORY_MS_PRODUCT_EXIST);
                 });
