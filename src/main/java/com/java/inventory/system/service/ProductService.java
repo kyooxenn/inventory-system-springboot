@@ -52,28 +52,36 @@ public class ProductService {
     }
 
     public Product updateProduct(Long id, ProductRequest request) throws ProductSvcException {
-        log.info("fetch product...");
+        log.info("Fetching product...");
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductSvcException(ERR_INVENTORY_MS_NO_PRODUCT_FOUND));
 
-        log.info("product found! {}", product);
+        log.info("Product found: {}", product);
 
-        productRepository.findByProductName(request.getProductName())
-                .ifPresent(p -> {
-                    throw new ProductSvcException(ProductSvcErrorType.ERR_INVENTORY_MS_PRODUCT_EXIST);
-                });
+        String newName = request.getProductName();
+        String currentName = product.getProductName();
 
-        // Update the fields of the existing product
+        // If the name is changing, check for duplicates
+        if (!currentName.equalsIgnoreCase(newName)) {
+            productRepository.findByProductName(newName)
+                    .ifPresent(p -> {
+                        throw new ProductSvcException(ProductSvcErrorType.ERR_INVENTORY_MS_PRODUCT_EXIST);
+                    });
+        }
+
+        // Update product fields
+        updateProductFields(product, request);
+
+        log.info("Updated product: {}", product);
+        return productRepository.save(product);
+    }
+
+    private void updateProductFields(Product product, ProductRequest request) {
         product.setProductName(request.getProductName());
         product.setDescription(request.getDescription());
         product.setProductType(request.getProductType());
         product.setQuantity(request.getQuantity());
         product.setUnitPrice(request.getUnitPrice());
-
-        log.info("updated product {}", product);
-
-        // Save the updated product back to the repository
-        return productRepository.save(product);  // This will update the existing entity
     }
 
 
