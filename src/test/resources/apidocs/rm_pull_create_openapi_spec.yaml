@@ -226,7 +226,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Product"
-  /v1/product/{productName}:
+  /v1/product/name/{productName}:
     get:
       tags:
       - Products Inquiry
@@ -238,6 +238,68 @@ paths:
         required: true
         schema:
           type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+        "403":
+          description: Forbidden Access
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+        "404":
+          description: Resource Not Found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+        "500":
+          description: Internal server error occurred
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+  /v1/product/id/{id}:
+    get:
+      tags:
+      - Products Inquiry
+      description: Get Product
+      operationId: getProductById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
       responses:
         "200":
           description: Success
