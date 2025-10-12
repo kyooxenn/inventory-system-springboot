@@ -7,25 +7,33 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductRequest {
 
-    @NotBlank(message = "Product name is required")
-    private String productName;
+    @NotBlank(message = "id is required")
+    private String id;
+
+    @NotBlank(message = "Item name is required")
+    private String itemName;
 
     @NotBlank(message = "Description is required")
     private String description;
 
-    @NotBlank(message = "Product type is required")
-    private String productType;
+    @NotBlank(message = "Category is required")
+    private String category;
+
+    @NotNull(message = "Unit price is required")
+    @Min(value = 0, message = "Unit price must be at least 0")
+    private BigDecimal unitPrice;
 
     @NotNull(message = "Quantity is required")
     @Min(value = 1, message = "Quantity must be at least 1")
     private Integer quantity;
 
-    @NotNull(message = "Unit price is required")
-    @Min(value = 0, message = "Unit price must be at least 0")
-    private Double unitPrice;
+    @NotBlank(message = "unit is required")
+    private String unit;
 }

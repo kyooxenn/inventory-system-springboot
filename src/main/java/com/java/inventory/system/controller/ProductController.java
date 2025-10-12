@@ -30,13 +30,13 @@ public class ProductController implements ProductApi {
         return ResponseEntity.ok(productService.getAllProducts());
     }
 
-    @GetMapping(value = "/name/{productName}")
+    @GetMapping(value = "/details/{productName}")
     public ResponseEntity<List<Product>> getProduct(@PathVariable String productName) {
         return ResponseEntity.ok(productService.getProductByProductName(productName));
     }
 
-    @GetMapping(value = "/id/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<Product> getProductById(@PathVariable String id) {
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
@@ -46,13 +46,13 @@ public class ProductController implements ProductApi {
     }
 
     @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request)
+    public ResponseEntity<Product> updateProduct(@PathVariable String id, @Valid @RequestBody ProductRequest request)
             throws ProductSvcException {
         return ResponseEntity.ok(productService.updateProduct(id, request));
     }
 
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Map<String, String>> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<Map<String, String>> deleteProduct(@PathVariable String id) {
         return productService.deleteProduct(id) ? ResponseEntity.ok(Map.of("message", "Product deleted successfully.")) :
                 ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Product with id " + id + " not found."));
     }

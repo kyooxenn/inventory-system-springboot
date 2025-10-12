@@ -15,8 +15,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // No additional methods are needed as JpaRepository already provides common operations like
     // save(), findById(), findAll(), deleteById(), etc.
 
-    Optional<Product> findByProductName(String productName);
+    Optional<Product> findById(String id);
 
-    @Query("SELECT p FROM Product p WHERE LOWER(p.productName) LIKE LOWER(CONCAT('%', :productName, '%'))")
-    List<Product> findByProductNameLike(@Param("productName") String productName);
+    boolean existsById(String id);
+
+    void deleteById(String id);
+
+    Optional<Product> findByItemName(String productName);
+
+    @Query("SELECT p FROM Product p WHERE LOWER(p.itemName) LIKE LOWER(CONCAT('%', :itemName, '%'))")
+    List<Product> findByItemNameLike(@Param("itemName") String itemName);
 }

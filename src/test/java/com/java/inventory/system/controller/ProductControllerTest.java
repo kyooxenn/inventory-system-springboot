@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -63,7 +64,16 @@ class ProductControllerTest {
     @Test
     @DisplayName("Retrieve a single product by product name")
     void getProduct() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/v1/product/name/Steam Deck")
+        mockMvc.perform(MockMvcRequestBuilders.get("/v1/product/details/Steam Deck")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("Retrieve a single product by id")
+    void getProductById() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/v1/product/083FFA7C04C24")
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andDo(print());
@@ -73,12 +83,10 @@ class ProductControllerTest {
     @DisplayName("Create a new product successfully")
     void createProduct() throws Exception {
 
-        ProductRequest request = new ProductRequest(
-                "Rog Ally X",
-                "Handheld PC",
-                "Gadgets",
+        ProductRequest request = new ProductRequest("FDS125G67J2SW","Rog Ally X", "Handheld PC", "Gadgets",
+                BigDecimal.TEN,
                 1,
-                32000.0
+                "Pieces"
         );
 
         mockMvc.perform(MockMvcRequestBuilders.post("/v1/product")
@@ -92,15 +100,11 @@ class ProductControllerTest {
     @DisplayName("Update product details successfully")
     void updateProduct() throws Exception {
 
-        ProductRequest request = new ProductRequest(
-                "Steam Deck 2",
-                "Steam Handheld",
-                "Gadgets",
-                1,
-                32000.0
+        ProductRequest request = new ProductRequest("083FFA7C04C24","Steam Deck 2", "Steam Handheld", "Gadgets", BigDecimal.TEN,
+                1, "Pieces"
         );
 
-        mockMvc.perform(MockMvcRequestBuilders.put("/v1/product/167794255273985")
+        mockMvc.perform(MockMvcRequestBuilders.put("/v1/product/083FFA7C04C24")
                         .content(objectMapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
@@ -110,7 +114,7 @@ class ProductControllerTest {
     @Test
     @DisplayName("Delete a product from inventory")
     void deleteProduct() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.delete("/v1/product/167794255273985")
+        mockMvc.perform(MockMvcRequestBuilders.delete("/v1/product/083FFA7C04C24")
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andDo(print());

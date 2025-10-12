@@ -29,7 +29,7 @@ public interface ProductApi {
     @Operation(description = "Get Product", tags = {"Products Inquiry"})
     @ApiDocSuccessResponse
     @ApiDocAllErrorsResponse
-    ResponseEntity<Product> getProductById(@PathVariable Long id);
+    ResponseEntity<Product> getProductById(@PathVariable String id);
 
     @Operation(description = "Create new product", tags = {"Add Product"})
     @ApiDocSuccessResponse
@@ -39,10 +39,10 @@ public interface ProductApi {
     @Operation(description = "Update product", tags = {"Update product"})
     @ApiDocSuccessResponse
     @ApiDocAllErrorsResponse
-    ResponseEntity<Product> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request) throws ProductSvcException;
+    ResponseEntity<Product> updateProduct(@PathVariable String id, @Valid @RequestBody ProductRequest request) throws ProductSvcException;
 
     @Operation(description = "Delete product", tags = {"delete product"})
     @ApiDocSuccessResponse
     @ApiDocAllErrorsResponse
-    ResponseEntity<Map<String, String>> deleteProduct(@PathVariable Long id);
+    ResponseEntity<Map<String, String>> deleteProduct(@PathVariable String id);
 }

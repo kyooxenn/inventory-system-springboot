@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -37,7 +38,7 @@ public class ProductService {
      * Fetch products by name (not cached since it's variable per request).
      */
     public List<Product> getProductByProductName(String productName) {
-        return productRepository.findByProductNameLike(productName);
+        return productRepository.findByItemNameLike(productName);
     }
 
     /**
@@ -45,7 +46,7 @@ public class ProductService {
      * You can also cache this individually if needed.
      */
     @Cacheable(value = "productById", key = "#id")
-    public Product getProductById(Long id) {
+    public Product getProductById(String id) {
         log.info("Fetching product by ID {} from database...", id);
         return productRepository.findById(id)
                 .orElseThrow(() -> new ProductSvcException(ERR_INVENTORY_MS_NO_PRODUCT_FOUND));
@@ -56,18 +57,19 @@ public class ProductService {
      */
     @CacheEvict(value = {"allProducts", "productById"}, allEntries = true)
     public Product createProduct(ProductRequest request) throws ProductSvcException {
-        productRepository.findByProductName(request.getProductName())
+        productRepository.findByItemName(request.getItemName())
                 .ifPresent(p -> {
                     throw new ProductSvcException(ProductSvcErrorType.ERR_INVENTORY_MS_PRODUCT_EXIST);
                 });
 
         Product newProduct = Product.builder()
-                .id(ProductIdGenerator.generateId())
-                .productName(request.getProductName())
+                .id(request.getId())
+                .itemName(request.getItemName())
                 .description(request.getDescription())
-                .productType(request.getProductType())
+                .category(request.getCategory())
                 .unitPrice(request.getUnitPrice())
                 .quantity(request.getQuantity())
+                .unit(request.getUnit())
                 .build();
 
         log.info("Created new product: {}", newProduct);
@@ -78,19 +80,19 @@ public class ProductService {
      * Update an existing product — also clear caches.
      */
     @CacheEvict(value = {"allProducts", "productById"}, allEntries = true)
-    public Product updateProduct(Long id, ProductRequest request) throws ProductSvcException {
+    public Product updateProduct(String id, ProductRequest request) throws ProductSvcException {
         log.info("Fetching product to update...");
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductSvcException(ERR_INVENTORY_MS_NO_PRODUCT_FOUND));
 
         log.info("Product found: {}", product);
 
-        String newName = request.getProductName();
-        String currentName = product.getProductName();
+        String newName = request.getItemName();
+        String currentName = product.getItemName();
 
         // Check if name already exists (when changed)
         if (!currentName.equalsIgnoreCase(newName)) {
-            productRepository.findByProductName(newName)
+            productRepository.findByItemName(newName)
                     .ifPresent(p -> {
                         throw new ProductSvcException(ProductSvcErrorType.ERR_INVENTORY_MS_PRODUCT_EXIST);
                     });
@@ -105,18 +107,20 @@ public class ProductService {
     }
 
     private void updateProductFields(Product product, ProductRequest request) {
-        product.setProductName(request.getProductName());
+        product.setItemName(request.getItemName());
         product.setDescription(request.getDescription());
-        product.setProductType(request.getProductType());
+        product.setCategory(request.getCategory());
         product.setQuantity(request.getQuantity());
         product.setUnitPrice(request.getUnitPrice());
+        product.setUnit(request.getUnit());
     }
 
     /**
      * Delete a product — clear all cached products.
      */
     @CacheEvict(value = {"allProducts", "productById"}, allEntries = true)
-    public boolean deleteProduct(Long id) {
+    @Transactional
+    public boolean deleteProduct(String id) {
         if (productRepository.existsById(id)) {
             productRepository.deleteById(id);
             log.info("Deleted product with ID {}", id);

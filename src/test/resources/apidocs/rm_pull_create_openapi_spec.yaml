@@ -7,6 +7,54 @@ servers:
   description: Generated server url
 paths:
   /v1/product/{id}:
+    get:
+      tags:
+      - Products Inquiry
+      description: Get Product
+      operationId: getProductById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "403":
+          description: Forbidden Access
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Resource Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "500":
+          description: Internal server error occurred
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
     put:
       tags:
       - Update product
@@ -17,8 +65,7 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
       requestBody:
         content:
           application/json:
@@ -72,8 +119,7 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
       responses:
         "200":
           description: Success
@@ -226,7 +272,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Product"
-  /v1/product/name/{productName}:
+  /v1/product/details/{productName}:
     get:
       tags:
       - Products Inquiry
@@ -287,96 +333,51 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Product"
-  /v1/product/id/{id}:
-    get:
-      tags:
-      - Products Inquiry
-      description: Get Product
-      operationId: getProductById
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Product"
-        "400":
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Product"
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Product"
-        "403":
-          description: Forbidden Access
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Product"
-        "404":
-          description: Resource Not Found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Product"
-        "500":
-          description: Internal server error occurred
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Product"
 components:
   schemas:
     ProductRequest:
       type: object
       properties:
-        productName:
+        id:
+          type: string
+        itemName:
           type: string
         description:
           type: string
-        productType:
+        category:
           type: string
+        unitPrice:
+          type: number
+          minimum: 0
         quantity:
           type: integer
           format: int32
           minimum: 1
-        unitPrice:
-          type: number
-          format: double
-          minimum: 0
+        unit:
+          type: string
       required:
+      - category
       - description
-      - productName
-      - productType
+      - id
+      - itemName
       - quantity
+      - unit
       - unitPrice
     Product:
       type: object
       properties:
         id:
-          type: integer
-          format: int64
-        productName:
+          type: string
+        itemName:
           type: string
         description:
           type: string
-        productType:
+        category:
           type: string
+        unitPrice:
+          type: number
         quantity:
           type: integer
           format: int32
-        unitPrice:
-          type: number
-          format: double
+        unit:
+          type: string
