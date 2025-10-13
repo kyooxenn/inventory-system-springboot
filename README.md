@@ -23,14 +23,15 @@ CREATE DATABASE inventorydb;
 USE inventorydb;
 
 -- Create the 'product' table
-CREATE TABLE product (
-id BIGINT NOT NULL,
-description VARCHAR(255),
-product_name VARCHAR(255),
-product_type VARCHAR(255),
-quantity INT NOT NULL,
-unit_price FLOAT(53) NOT NULL,
-PRIMARY KEY (id)
+create table product (
+    id varchar(255) not null,
+    category varchar(255),
+    description varchar(255),
+    item_name varchar(255),
+    quantity integer not null,
+    unit varchar(255),
+    unit_price numeric(38,2),
+    primary key (id)
 );
 
 ---
@@ -42,3 +43,29 @@ https://console.aiven.io/account/a567d6ec9d6b/project/project-xen/services/mysql
 
 ## 📖 View OpenAPI Documentation
 https://inventory-system-dair.onrender.com/swagger-ui/index.html
+
+---
+
+## Register (optional)
+
+curl -X POST http://localhost:8080/api/auth/register \
+-H "Content-Type: application/json" \
+-d '{"username":"bob","password":"secret"}'
+
+---
+
+## Login — get token
+
+curl -X POST http://localhost:8080/api/auth/login \
+-H "Content-Type: application/json" \
+-d '{"username":"bob","password":"secret"}'
+# Response: {"token":"eyJ..."}
+
+---
+
+## Call protected endpoint
+
+curl http://localhost:8080/api/hello \
+-H "Authorization: Bearer eyJ..." 
+
+---

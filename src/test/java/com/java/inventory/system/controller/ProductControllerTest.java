@@ -3,6 +3,7 @@ package com.java.inventory.system.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.java.inventory.system.dto.ProductRequest;
 import com.java.inventory.system.repository.ProductRepository;
+import com.java.inventory.system.security.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterEach;
@@ -37,11 +38,18 @@ class ProductControllerTest {
 
     private static MockWebServer mockWebServer;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+    private String token;
+
     @BeforeEach
     void setUpMockServer() throws IOException {
         mockWebServer = new MockWebServer();
         mockWebServer.start(8081);
         log.info("Mock server running at: {}", mockWebServer.url("/"));
+
+        // Generate a valid JWT for testing
+        token = "Bearer " + jwtUtil.generateToken("testuser", "ROLE_USER");
     }
 
     @AfterEach
@@ -56,6 +64,7 @@ class ProductControllerTest {
     @DisplayName("Fetch all products successfully")
     void getAllProducts() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/v1/product")
+                        .header("Authorization", token)
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andDo(print());
@@ -65,6 +74,7 @@ class ProductControllerTest {
     @DisplayName("Retrieve a single product by product name")
     void getProduct() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/v1/product/details/Steam Deck")
+                        .header("Authorization", token)
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andDo(print());
@@ -74,6 +84,7 @@ class ProductControllerTest {
     @DisplayName("Retrieve a single product by id")
     void getProductById() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/v1/product/083FFA7C04C24")
+                        .header("Authorization", token)
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andDo(print());
@@ -90,6 +101,7 @@ class ProductControllerTest {
         );
 
         mockMvc.perform(MockMvcRequestBuilders.post("/v1/product")
+                        .header("Authorization", token)
                         .content(objectMapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
@@ -105,6 +117,7 @@ class ProductControllerTest {
         );
 
         mockMvc.perform(MockMvcRequestBuilders.put("/v1/product/083FFA7C04C24")
+                        .header("Authorization", token)
                         .content(objectMapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
@@ -115,6 +128,7 @@ class ProductControllerTest {
     @DisplayName("Delete a product from inventory")
     void deleteProduct() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.delete("/v1/product/083FFA7C04C24")
+                        .header("Authorization", token)
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andDo(print());
