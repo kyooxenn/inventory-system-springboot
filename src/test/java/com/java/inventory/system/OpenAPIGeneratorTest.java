@@ -1,5 +1,6 @@
 package com.java.inventory.system;
 
+import com.java.inventory.system.security.JwtUtil;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,10 +29,17 @@ public class OpenAPIGeneratorTest {
 
     private static MockWebServer mockWebServer;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+    private String token;
+
     @BeforeEach
     void setUpMockServer() throws IOException {
         mockWebServer = new MockWebServer();
         mockWebServer.start(8081);
+
+        // Generate a valid JWT for testing
+        token = "Bearer " + jwtUtil.generateToken("testuser", "ROLE_USER");
     }
 
     @AfterEach
@@ -42,7 +50,8 @@ public class OpenAPIGeneratorTest {
     @Test
     public void generateOpenAPIYaml() throws Exception {
         // Perform the request to fetch OpenAPI YAML
-        MvcResult result = mockMvc.perform(get("/v3/api-docs.yaml"))
+        MvcResult result = mockMvc.perform(get("/v3/api-docs.yaml")
+                        .header("Authorization", token))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andReturn();
