@@ -5,7 +5,6 @@ import com.java.inventory.system.exception.ProductSvcException;
 import com.java.inventory.system.exception.errortypes.ProductSvcErrorType;
 import com.java.inventory.system.model.Product;
 import com.java.inventory.system.repository.ProductRepository;
-import com.java.inventory.system.util.ProductIdGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -31,7 +30,9 @@ public class ProductService {
     @Cacheable(value = "allProducts")
     public List<Product> getAllProducts() {
         log.info("Fetching all products from database...");
-        return productRepository.findAll();
+        List<Product> retrievedProducts = productRepository.findAll();
+        log.info("Records retrieved successfully.");
+        return retrievedProducts;
     }
 
     /**
@@ -47,7 +48,7 @@ public class ProductService {
      */
     @Cacheable(value = "productById", key = "#id")
     public Product getProductById(String id) {
-        log.info("Fetching product by ID {} from database...", id);
+        log.info("Fetching product ID [{}] from database...", id);
         return productRepository.findById(id)
                 .orElseThrow(() -> new ProductSvcException(ERR_INVENTORY_MS_NO_PRODUCT_FOUND));
     }
@@ -72,8 +73,10 @@ public class ProductService {
                 .unit(request.getUnit())
                 .build();
 
-        log.info("Created new product: {}", newProduct);
-        return productRepository.save(newProduct);
+        log.info("Creating new product [{}].", request.getItemName());
+        Product savedProduct = productRepository.save(newProduct);
+        log.info("created successfully!");
+        return savedProduct;
     }
 
     /**
@@ -85,13 +88,14 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductSvcException(ERR_INVENTORY_MS_NO_PRODUCT_FOUND));
 
-        log.info("Product found: {}", product);
+        log.info("Product found! [{}]", product.getItemName());
 
         String newName = request.getItemName();
         String currentName = product.getItemName();
 
         // Check if name already exists (when changed)
         if (!currentName.equalsIgnoreCase(newName)) {
+            log.info("Validating if the product exists...");
             productRepository.findByItemName(newName)
                     .ifPresent(p -> {
                         throw new ProductSvcException(ProductSvcErrorType.ERR_INVENTORY_MS_PRODUCT_EXIST);
@@ -101,8 +105,7 @@ public class ProductService {
         // Apply updates
         updateProductFields(product, request);
         Product updated = productRepository.save(product);
-
-        log.info("Updated product: {}", updated);
+        log.info("Updated successfully!");
         return updated;
     }
 
@@ -123,10 +126,10 @@ public class ProductService {
     public boolean deleteProduct(String id) {
         if (productRepository.existsById(id)) {
             productRepository.deleteById(id);
-            log.info("Deleted product with ID {}", id);
+            log.info("Product with ID {} deleted successfully.", id);
             return true;
         }
-        log.warn("Product with ID {} not found for deletion", id);
+        log.info("Product with ID {} was not found for deletion.", id);
         return false;
     }
 }
