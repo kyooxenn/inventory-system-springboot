@@ -1,6 +1,6 @@
 # 📦 Inventory System Setup
 
-> ⚠️ **Note:** This project uses an embedded **H2 Database** by default. You do **not** need to set up MySQL unless you're switching to a production-grade database.
+> ⚠️ **Note:** This project is intended for production-grade use with **MySQL**. You do **not** need to use the embedded H2 Database unless you're working in a local or development environment.
 
 ---
 
@@ -37,7 +37,7 @@ curl https://inventory-system-springboot-sea.onrender.com/api/hello \
 -H "Authorization: Bearer eyJ..."
 ```
 
-### 🧰 Optional: MySQL Setup (for production use)
+### MySQL Setup (for production use)
 
 If you choose to use MySQL instead of H2, follow these steps:
 
@@ -67,10 +67,20 @@ CREATE TABLE product (
     category VARCHAR(255),
     description VARCHAR(255),
     item_name VARCHAR(255),
-    quantity INTEGER NOT NULL,
+    quantity INT NOT NULL,
     unit VARCHAR(255),
-    unit_price NUMERIC(38,2),
+    unit_price DECIMAL(38,2),
     PRIMARY KEY (id)
 );
+
+-- Create the 'users' table
+CREATE TABLE users (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    password VARCHAR(255) NOT NULL,
+    roles VARCHAR(255),
+    username VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id)
+);
+
 
 ```
