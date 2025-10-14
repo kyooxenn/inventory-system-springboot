@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.java</groupId>
-	<artifactId>inventory.system</artifactId>
+	<artifactId>inventory-system-springboot</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>inventory.system</name>
 	<description>Simple CRUD API for an Product Inventory System</description>

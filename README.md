@@ -7,7 +7,7 @@
 ## 📖 OpenAPI Documentation
 
 Explore the API endpoints via Swagger UI:  
-https://inventory-system-dair.onrender.com/swagger-ui/index.html
+https://inventory-system-springboot-sea.onrender.com/swagger-ui/index.html
 
 ---
 
@@ -15,14 +15,14 @@ https://inventory-system-dair.onrender.com/swagger-ui/index.html
 import curl on postman
 ### ✅ Register (optional)
 ```
-curl -X POST https://inventory-system-dair.onrender.com/api/auth/register \
+curl -X POST https://inventory-system-springboot-sea.onrender.com/api/auth/register \
 -H "Content-Type: application/json" \
 -d '{"username":"bob","password":"secret"}'
 ```
 
 ### 🔑 Login — Get Token
 ```
-curl -X POST https://inventory-system-dair.onrender.com/api/auth/login \
+curl -X POST https://inventory-system-springboot-sea.onrender.com/api/auth/login \
 -H "Content-Type: application/json" \
 -d '{"username":"bob","password":"secret"}'
 ```
@@ -33,7 +33,7 @@ curl -X POST https://inventory-system-dair.onrender.com/api/auth/login \
 
 ### 🔒 Call Protected Endpoint
 ```
-curl https://inventory-system-dair.onrender.com/api/hello \
+curl https://inventory-system-springboot-sea.onrender.com/api/hello \
 -H "Authorization: Bearer eyJ..."
 ```
 
