@@ -13,6 +13,8 @@ import org.springframework.web.client.RestTemplate;
 import java.lang.management.ManagementFactory;
 import com.sun.management.OperatingSystemMXBean;
 import java.time.LocalTime;
+import java.time.ZoneId;
+
 import java.util.Map;
 
 @Slf4j
@@ -32,7 +34,7 @@ public class KeepAliveService {
     @Scheduled(fixedRate = 60000) // every 1 minute
     public void adaptivePingLoginApi() {
         try {
-            LocalTime now = LocalTime.now();
+            LocalTime now = LocalTime.now(ZoneId.of("Asia/Singapore"));
             int hour = now.getHour();
 
             // ✅ 6 AM – 12 AM → ping every 5 min
