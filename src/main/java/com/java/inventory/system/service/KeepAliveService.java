@@ -40,7 +40,7 @@ public class KeepAliveService {
             // ✅ 6 AM – 12 AM → ping every 5 min
             // ✅ 12 AM – 6 AM → ping every 30 min
             boolean isDayTime = (hour >= 6 && hour < 24);
-            int pingIntervalMinutes = isDayTime ? 5 : 30;
+            int pingIntervalMinutes = isDayTime ? 10 : 14;
 
             int currentMinute = now.getMinute();
             if (currentMinute % pingIntervalMinutes != 0) {
