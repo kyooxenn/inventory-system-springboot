@@ -10,6 +10,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.lang.management.ManagementFactory;
+import com.sun.management.OperatingSystemMXBean;
 import java.time.LocalTime;
 import java.util.Map;
 
@@ -22,8 +24,12 @@ public class KeepAliveService {
     @Value("${app.keepalive.login-url}")
     private String loginUrl;
 
+    private static final double CPU_THRESHOLD = 0.90; // 90%
+    private static final int MAX_HIGH_CPU_CHECKS = 5; // e.g. 5 consecutive minutes
+    private int consecutiveHighCpuCount = 0;
+
     // ✅ Adaptive scheduler: checks every minute and pings based on time of day
-    @Scheduled(fixedRate = 60000) // run every 1 minute
+    @Scheduled(fixedRate = 60000) // every 1 minute
     public void adaptivePingLoginApi() {
         try {
             LocalTime now = LocalTime.now();
@@ -36,21 +42,42 @@ public class KeepAliveService {
 
             int currentMinute = now.getMinute();
             if (currentMinute % pingIntervalMinutes != 0) {
-                return; // Skip ping to save CPU during non-interval minutes
+                return; // Skip if not time to ping yet
             }
 
-            log.info("⏱️ Keep-alive check at {} (interval: {} min)", now, pingIntervalMinutes);
+            // ✅ Monitor CPU usage
+            OperatingSystemMXBean osBean =
+                    (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+            double cpuLoad = osBean.getSystemCpuLoad(); // 0.0 to 1.0
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
+            if (cpuLoad >= 0 && cpuLoad < CPU_THRESHOLD) {
+                consecutiveHighCpuCount = 0; // reset if CPU is normal
+                log.info("⏱️ Keep-alive check at {} (interval: {} min, CPU: {}%)",
+                        now, pingIntervalMinutes, (int) (cpuLoad * 100));
 
-            // Customize your credentials here
-            Map<String, String> body = Map.of("username", "root", "password", "root");
-            HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
 
-            ResponseEntity<String> response = restTemplate.postForEntity(loginUrl, request, String.class);
+                Map<String, String> body = Map.of("username", "root", "password", "root");
+                HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
 
-            log.info("✅ Keep-alive response: {}", response.getStatusCode());
+                ResponseEntity<String> response =
+                        restTemplate.postForEntity(loginUrl, request, String.class);
+
+                log.info("✅ Keep-alive response: {}", response.getStatusCode());
+
+            } else {
+                consecutiveHighCpuCount++;
+                log.warn("⚠️ High CPU detected ({}%). Count: {}/{}",
+                        (int) (cpuLoad * 100), consecutiveHighCpuCount, MAX_HIGH_CPU_CHECKS);
+
+                // If high CPU persists for too long, restart gracefully
+                if (consecutiveHighCpuCount >= MAX_HIGH_CPU_CHECKS) {
+                    log.error("💥 CPU usage stayed above {}% for {} checks. Restarting app gracefully...",
+                            (int) (CPU_THRESHOLD * 100), MAX_HIGH_CPU_CHECKS);
+                    System.exit(1); // Render will auto-restart the service
+                }
+            }
 
         } catch (Exception e) {
             log.warn("⚠️ Failed to ping login API: {}", e.getMessage());
