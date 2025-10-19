@@ -369,11 +369,11 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Product"
-  /api/hello:
+  /api/health:
     get:
       tags:
-      - hello-controller
-      operationId: hello
+      - health-controller
+      operationId: health
       responses:
         "200":
           description: OK

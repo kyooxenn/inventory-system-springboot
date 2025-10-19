@@ -11,10 +11,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 // 👇 This disables Redis repository scanning but keeps Redis available for caching.
 @SpringBootApplication(exclude = {RedisRepositoriesAutoConfiguration.class})
 @EnableScheduling // keep application alive on render, prevents shutdown due to inactivity
-public class Application {
+public class InventorySystemApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
+		SpringApplication.run(InventorySystemApplication.class, args);
 	}
 
 }

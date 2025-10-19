@@ -11,7 +11,7 @@
 	<groupId>com.java</groupId>
 	<artifactId>inventory-system-springboot</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>inventory.system</name>
+	<name>inventory-system-springboot</name>
 	<description>Simple CRUD API for an Product Inventory System</description>
 	<url/>
 	<licenses>

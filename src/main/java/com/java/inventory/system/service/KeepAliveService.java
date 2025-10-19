@@ -1,21 +1,16 @@
 package com.java.inventory.system.service;
 
+import com.sun.management.OperatingSystemMXBean;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.management.ManagementFactory;
-import com.sun.management.OperatingSystemMXBean;
 import java.time.LocalTime;
 import java.time.ZoneId;
-
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -23,8 +18,8 @@ public class KeepAliveService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @Value("${app.keepalive.login-url}")
-    private String loginUrl;
+    @Value("${app.keepalive.health-url}")
+    private String healthCheckUrl;
 
     private static final double CPU_THRESHOLD = 0.90; // 90%
     private static final int MAX_HIGH_CPU_CHECKS = 5; // e.g. 5 consecutive minutes
@@ -38,9 +33,9 @@ public class KeepAliveService {
             int hour = now.getHour();
 
             // ✅ 6 AM – 12 AM → ping every 5 min
-            // ✅ 12 AM – 6 AM → ping every 30 min
+            // ✅ 12 AM – 6 AM → ping every 14 min
             boolean isDayTime = (hour >= 6 && hour < 24);
-            int pingIntervalMinutes = isDayTime ? 10 : 14;
+            int pingIntervalMinutes = isDayTime ? 5 : 14;
 
             int currentMinute = now.getMinute();
             if (currentMinute % pingIntervalMinutes != 0) {
@@ -57,16 +52,10 @@ public class KeepAliveService {
                 log.info("⏱️ Keep-alive check at {} (interval: {} min, CPU: {}%)",
                         now, pingIntervalMinutes, (int) (cpuLoad * 100));
 
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-
-                Map<String, String> body = Map.of("username", "root", "password", "root");
-                HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
-
                 ResponseEntity<String> response =
-                        restTemplate.postForEntity(loginUrl, request, String.class);
+                        restTemplate.getForEntity(healthCheckUrl, String.class);
 
-                log.info("✅ Keep-alive response: {}", response.getStatusCode());
+                log.info("Keep-alive response: {}", response.getBody());
 
             } else {
                 consecutiveHighCpuCount++;
@@ -82,7 +71,7 @@ public class KeepAliveService {
             }
 
         } catch (Exception e) {
-            log.warn("⚠️ Failed to ping login API: {}", e.getMessage());
+            log.warn("⚠️ Failed to ping health check API: {}", e.getMessage());
         }
     }
 }
