@@ -31,10 +31,20 @@ curl -X POST https://inventory-system-springboot-sea.onrender.com/api/auth/login
 {"token":"eyJ..."}
 ```
 
-### 🔒 Call Protected Endpoint
+###  Health Check Endpoint
 ```
-curl https://inventory-system-springboot-sea.onrender.com/api/hello \
--H "Authorization: Bearer eyJ..."
+curl https://inventory-system-springboot-sea.onrender.com/api/health \
+-H "Content-Type: application/json" \
+```
+###  Sample Health Check Response:
+```
+✅ Inventory System API is alive! All systems operational 🚀
+```
+
+###  Redis Viewer Endpoint
+```
+curl https://inventory-system-springboot-sea.onrender.com/redis/all \
+-H "Content-Type: application/json" \
 ```
 
 ### MySQL Setup (for production use)
