@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.sql.*;
+import java.util.Locale;
 import java.util.UUID;
 
 @Component
@@ -27,7 +28,7 @@ public class ProductSeeder implements CommandLineRunner {
     public void run(String... args) throws Exception {
         log.info("🌱 Checking product table before seeding...");
 
-        Faker faker = new Faker();
+        Faker faker = new Faker(new Locale("en"));
 
         try (Connection conn = DriverManager.getConnection(url, user, password)) {
 
