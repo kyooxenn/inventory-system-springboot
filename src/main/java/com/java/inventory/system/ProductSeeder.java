@@ -1,6 +1,7 @@
 package com.java.inventory.system;
 
 import com.github.javafaker.Faker;
+import com.java.inventory.system.util.ProductIdGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -9,7 +10,6 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.Locale;
-import java.util.UUID;
 
 @Component
 @Slf4j
@@ -52,7 +52,7 @@ public class ProductSeeder implements CommandLineRunner {
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
 
                 for (int i = 0; i < 1000; i++) {
-                    ps.setString(1, UUID.randomUUID().toString());
+                    ps.setString(1, ProductIdGenerator.generateId());
                     ps.setString(2, faker.options().option(
                             "Books", "Movies", "Music", "Games", "Electronics", "Computers",
                             "Home", "Garden", "Tools", "Grocery", "Health", "Beauty",
