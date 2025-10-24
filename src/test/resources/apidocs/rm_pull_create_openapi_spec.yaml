@@ -175,55 +175,61 @@ paths:
       - All Products Inquiry
       description: Get All Products
       operationId: getAllProducts
+      parameters:
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Product"
+                type: object
+                additionalProperties:
+                  type: object
         "400":
           description: Bad Request
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Product"
+                type: object
+                additionalProperties:
+                  type: object
         "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Product"
+                type: object
+                additionalProperties:
+                  type: object
         "403":
           description: Forbidden Access
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Product"
+                type: object
+                additionalProperties:
+                  type: object
         "404":
           description: Resource Not Found
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Product"
+                type: object
+                additionalProperties:
+                  type: object
         "500":
           description: Internal server error occurred
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Product"
+                type: object
+                additionalProperties:
+                  type: object
     post:
       tags:
       - Add Product
@@ -308,67 +314,77 @@ paths:
             '*/*':
               schema:
                 type: object
-  /v1/product/details/{productName}:
+  /v1/product/search:
     get:
       tags:
       - Products Inquiry
       description: Get Product
-      operationId: getProduct
+      operationId: getProductsByNameAndCategory
       parameters:
-      - name: productName
-        in: path
-        required: true
+      - name: itemName
+        in: query
+        required: false
         schema:
           type: string
+      - name: category
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
       responses:
         "200":
           description: Success
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Product"
+                type: object
+                additionalProperties:
+                  type: object
         "400":
           description: Bad Request
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Product"
+                type: object
+                additionalProperties:
+                  type: object
         "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Product"
+                type: object
+                additionalProperties:
+                  type: object
         "403":
           description: Forbidden Access
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Product"
+                type: object
+                additionalProperties:
+                  type: object
         "404":
           description: Resource Not Found
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Product"
+                type: object
+                additionalProperties:
+                  type: object
         "500":
           description: Internal server error occurred
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Product"
+                type: object
+                additionalProperties:
+                  type: object
   /redis/all:
     get:
       tags:
@@ -450,3 +466,18 @@ components:
           type: string
         password:
           type: string
+    Pageable:
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int32
+          minimum: 0
+        size:
+          type: integer
+          format: int32
+          minimum: 1
+        sort:
+          type: array
+          items:
+            type: string
