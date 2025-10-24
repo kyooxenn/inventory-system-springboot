@@ -9,10 +9,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.java.inventory.system.exception.errortypes.ProductSvcErrorType.ERR_INVENTORY_MS_NO_PRODUCT_FOUND;
 
@@ -24,22 +27,59 @@ public class ProductService {
     private final ProductRepository productRepository;
 
     /**
-     * Cache the result of this method — fetch all products.
-     * The first call hits the DB, subsequent calls are served from Redis.
+     * Cache the result of fetching all products per page.
+     * Each unique page (page number + size + sort) is cached separately.
+     * Note: Cache eviction should be configured for updates/deletes (e.g., @CacheEvict on save/delete methods).
      */
-    @Cacheable(value = "allProducts")
-    public List<Product> getAllProducts() {
-        log.info("Fetching all products from database...");
-        List<Product> retrievedProducts = productRepository.findAll();
-        log.info("Records retrieved successfully.");
-        return retrievedProducts;
+    @Cacheable(
+            value = "allProducts",
+            key = "'page_' + #pageable.pageNumber + '_size_' + #pageable.pageSize + '_sort_' + #pageable.sort.toString()"
+    )
+    public Map<String, Object> getAllProducts(Pageable pageable) {
+        log.info("Fetching products from database (page={}, size={})...", pageable.getPageNumber(), pageable.getPageSize());
+        Page<Product> page = productRepository.findAll(pageable);
+
+        Map<String, Object> response = buildResponse(page);
+
+        log.info("Products retrieved successfully: {} items on this page, {} total.",
+                page.getNumberOfElements(), page.getTotalElements());
+
+        return response;
     }
 
     /**
-     * Fetch products by name (not cached since it's variable per request).
+     * Fetch products by name and category with pagination.
+     * Caching added for performance if searches are frequent.
+     * Note: Cache eviction should be configured for updates/deletes.
      */
-    public List<Product> getProductByProductName(String productName) {
-        return productRepository.findByItemNameLike(productName);
+    @Cacheable(
+            value = "searchProducts",
+            key = "'search_' + #productName + '_' + #category + '_page_' + #pageable.pageNumber + '_size_' + #pageable.pageSize + '_sort_' + #pageable.sort.toString()"
+    )
+    public Map<String, Object> findByItemNameAndCategory(String productName, String category, Pageable pageable) {
+        log.info("Searching products from database (name={}, category={}, page={}, size={})...",
+                productName, category, pageable.getPageNumber(), pageable.getPageSize());
+
+        Page<Product> page = productRepository.findByItemNameAndCategory(productName, category, pageable);
+
+        Map<String, Object> response = buildResponse(page);
+
+        log.info("Search completed: {} items on this page, {} total.",
+                page.getNumberOfElements(), page.getTotalElements());
+
+        return response;
+    }
+
+    /**
+     * Helper method to build the response map, reducing code duplication.
+     */
+    private Map<String, Object> buildResponse(Page<Product> page) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", page.getContent());
+        response.put("currentPage", page.getNumber());
+        response.put("totalItems", page.getTotalElements());
+        response.put("totalPages", page.getTotalPages());
+        return response;
     }
 
     /**

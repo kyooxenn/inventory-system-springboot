@@ -1,7 +1,8 @@
 package com.java.inventory.system.repository;
 
-
 import com.java.inventory.system.model.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
@@ -25,4 +26,16 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT p FROM Product p WHERE LOWER(p.itemName) LIKE LOWER(CONCAT('%', :itemName, '%'))")
     List<Product> findByItemNameLike(@Param("itemName") String itemName);
+
+    @Query("""
+                SELECT p FROM Product p
+                WHERE 
+                    (:itemName IS NULL OR :itemName = '' OR LOWER(p.itemName) LIKE LOWER(CONCAT('%', :itemName, '%')))
+                AND 
+                    (:category IS NULL OR :category = '' OR LOWER(p.category) = LOWER(:category))
+            """)
+    Page<Product> findByItemNameAndCategory(
+            @Param("itemName") String itemName,
+            @Param("category") String category,
+            Pageable pageable);
 }

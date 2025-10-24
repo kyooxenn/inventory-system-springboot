@@ -7,11 +7,12 @@ import com.java.inventory.system.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -26,13 +27,16 @@ public class ProductController implements ProductApi {
     private final ProductService productService;
 
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
+    public ResponseEntity<Map<String, Object>> getAllProducts(@PageableDefault(size = 5) Pageable pageable) {
+        return ResponseEntity.ok(productService.getAllProducts(pageable));
     }
 
-    @GetMapping(value = "/details/{productName}")
-    public ResponseEntity<List<Product>> getProduct(@PathVariable String productName) {
-        return ResponseEntity.ok(productService.getProductByProductName(productName));
+    @GetMapping("/search")
+    public ResponseEntity<Map<String, Object>> getProductsByNameAndCategory(
+            @RequestParam(required = false) String itemName,
+            @RequestParam(required = false) String category,
+            @PageableDefault(size = 5, sort = "itemName") Pageable pageable) {
+        return ResponseEntity.ok(productService.findByItemNameAndCategory(itemName, category, pageable));
     }
 
     @GetMapping(value = "/{id}")
