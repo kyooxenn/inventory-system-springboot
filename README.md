@@ -92,5 +92,13 @@ CREATE TABLE users (
     PRIMARY KEY (id)
 );
 
+```
+
+#### 📋 Scan Vulnerability Issues Using Trivy
+
+install trivy and run this command:
+
+```
+trivy fs .
 
 ```
