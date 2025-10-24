@@ -12,7 +12,7 @@
 	<artifactId>inventory-system-springboot</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>inventory-system-springboot</name>
-	<description>Simple CRUD API for an Product Inventory System</description>
+	<description>Simple CRUD API for a Product Inventory System</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -118,6 +118,11 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
+            <version>1.5.19</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
             <version>1.5.19</version>
         </dependency>
         <!-- Fix vulnerability  CVE-2025-48924 -->
