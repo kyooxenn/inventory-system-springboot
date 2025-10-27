@@ -15,11 +15,11 @@ public class DataInitializer {
     return args -> {
       if (userRepository.findByUsername("user").isEmpty()) {
         User u = new User();
-        u.setUsername("user");
-        u.setPassword(passwordEncoder.encode("password"));
+        u.setUsername("root");
+        u.setPassword(passwordEncoder.encode("root"));
         u.setRoles("ROLE_USER");
-        u.setEmail("email");
-        u.setMobile("mobile");
+        u.setEmail("bobila.norbert@gmail.com");
+        u.setMobile("+639603717056");
         userRepository.save(u);
       }
     };
