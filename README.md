@@ -89,6 +89,8 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     roles VARCHAR(255),
     username VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    mobile VARCHAR(255) NOT NULL,
     PRIMARY KEY (id)
 );
 

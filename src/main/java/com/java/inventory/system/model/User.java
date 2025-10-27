@@ -22,6 +22,12 @@ public class User {
   @Column(nullable = false)
   private String password;
 
+  @Column(nullable = false)
+  private String email;
+
+  @Column(nullable = false)
+  private String mobile;
+
   // store roles as comma separated or a join table; simple example:
   private String roles; // e.g. "ROLE_USER,ROLE_ADMIN"
 
