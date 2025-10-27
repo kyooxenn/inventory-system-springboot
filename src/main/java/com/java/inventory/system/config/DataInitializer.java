@@ -18,6 +18,8 @@ public class DataInitializer {
         u.setUsername("user");
         u.setPassword(passwordEncoder.encode("password"));
         u.setRoles("ROLE_USER");
+        u.setEmail("email");
+        u.setMobile("mobile");
         userRepository.save(u);
       }
     };
