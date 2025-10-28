@@ -11,6 +11,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.io.IOException;
 
@@ -40,7 +44,27 @@ public class EmailSenderService {
             request.setEndpoint("mail/send");
             request.setBody(mail.build());
             Response response = sg.api(request);
-            log.info("📧 Email sent to {} | Status: {}", toEmail, response.getStatusCode());
+
+            log.info("status code for sendOtpEmail: {}", response.getStatusCode());
+
+            if (response.getStatusCode() == 401 || response.getStatusCode() == 403) {
+
+                // Parse the JSON string
+                JsonObject jsonObject = JsonParser.parseString(response.getBody()).getAsJsonObject();
+                // Get the "errors" array
+                JsonArray errorsArray = jsonObject.getAsJsonArray("errors");
+
+                // Check if the array has elements and extract the first error's message
+                if (!errorsArray.isEmpty()) {
+                    JsonObject firstError = errorsArray.get(0).getAsJsonObject();
+                    String message = firstError.get("message").getAsString();
+                    log.error("error: {}", message);
+                } else {
+                    log.info("No errors found for sendOtpEmail");
+                }
+            } else {
+                log.info("📧 Email sent to {} | Status: {}", toEmail, response.getStatusCode());
+            }
         } catch (IOException ex) {
             throw ex;
         }
