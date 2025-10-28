@@ -1,11 +1,14 @@
 package com.java.inventory.system.service;
 
 import com.java.inventory.system.dto.AuthRequest;
+import com.java.inventory.system.model.AuthResponse;
 import com.java.inventory.system.model.User;
 import com.java.inventory.system.repository.UserRepository;
+import com.java.inventory.system.security.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +34,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final BCryptPasswordEncoder passwordEncoder;
     private final OtpService otpService;
+    private final JwtUtil jwtUtil;
     private final StringRedisTemplate redisTemplate;
 
     // Expiration time for temporary login session
@@ -45,24 +49,30 @@ public class AuthService {
             User user = userRepository.findByUsername(request.getUsername())
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+            if (BooleanUtils.isFalse(user.getIsVerified())) {
+                otpService.generateOtp(user.getUsername(), user.getEmail());
 
-            otpService.generateOtp(user.getUsername(), user.getEmail());
+                String tempToken = UUID.randomUUID().toString();
 
-            String tempToken = UUID.randomUUID().toString();
+                // ✅ Step 5: Store the username in Redis with expiration
+                redisTemplate.opsForValue().set(
+                        "TEMP_LOGIN:" + tempToken,
+                        user.getUsername(),
+                        TEMP_TOKEN_EXPIRATION_MINUTES,
+                        TimeUnit.MINUTES
+                );
 
-            // ✅ Step 5: Store the username in Redis with expiration
-            redisTemplate.opsForValue().set(
-                    "TEMP_LOGIN:" + tempToken,
-                    user.getUsername(),
-                    TEMP_TOKEN_EXPIRATION_MINUTES,
-                    TimeUnit.MINUTES
-            );
+                // ✅ Step 6: Return response (without JWT yet)
+                return ResponseEntity.ok(Map.of(
+                        "message", "OTP sent to your registered email or phone",
+                        "tempToken", tempToken
+                ));
 
-            // ✅ Step 6: Return response (without JWT yet)
-            return ResponseEntity.ok(Map.of(
-                    "message", "OTP sent to your registered email or phone",
-                    "tempToken", tempToken
-            ));
+            } else {
+                String jwt = jwtUtil.generateToken(request.getUsername(), user.getRoles());
+                return ResponseEntity.ok(new AuthResponse(jwt));
+            }
+
         } catch (BadCredentialsException e) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)

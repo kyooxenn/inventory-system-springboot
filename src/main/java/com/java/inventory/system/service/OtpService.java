@@ -64,6 +64,9 @@ public class OtpService {
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+            user.setIsVerified(Boolean.TRUE);
+            userRepository.save(user);
+
             String jwt = jwtUtil.generateToken(username, user.getRoles());
 
             redisTemplate.delete("TEMP_LOGIN:" + request.getTempToken());

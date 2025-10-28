@@ -28,6 +28,9 @@ public class User {
   @Column(nullable = false)
   private String mobile;
 
+  @Column(nullable = false)
+  private Boolean isVerified;
+
   // store roles as comma separated or a join table; simple example:
   private String roles; // e.g. "ROLE_USER,ROLE_ADMIN"
 

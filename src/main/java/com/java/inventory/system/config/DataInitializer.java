@@ -21,6 +21,7 @@ public class DataInitializer {
                 u.setRoles("ROLE_ADMIN");
                 u.setEmail("bobila.norbert@gmail.com");
                 u.setMobile("+639603717056");
+                u.setIsVerified(false);
                 userRepository.save(u);
             }
         };

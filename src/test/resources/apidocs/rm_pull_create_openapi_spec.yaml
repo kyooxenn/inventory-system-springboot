@@ -278,6 +278,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Product"
+  /api/auth/verify-otp:
+    post:
+      tags:
+      - auth-controller
+      operationId: verifyOtp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OtpVerificationRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
   /api/auth/register:
     post:
       tags:
@@ -459,12 +477,23 @@ components:
           format: int32
         unit:
           type: string
+    OtpVerificationRequest:
+      type: object
+      properties:
+        tempToken:
+          type: string
+        otp:
+          type: string
     AuthRequest:
       type: object
       properties:
         username:
           type: string
         password:
+          type: string
+        email:
+          type: string
+        mobile:
           type: string
     Pageable:
       type: object
