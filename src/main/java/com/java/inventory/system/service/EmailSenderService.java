@@ -1,22 +1,48 @@
 package com.java.inventory.system.service;
 
+import com.sendgrid.Method;
+import com.sendgrid.Request;
+import com.sendgrid.Response;
+import com.sendgrid.SendGrid;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
 import lombok.RequiredArgsConstructor;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmailSenderService {
 
-    private final JavaMailSender mailSender;
+    @Value("${SENDGRID_EMAIL}")
+    private String sendGridEmail;
 
-    public void sendOtpEmail(String toEmail, String otp) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(toEmail);
-        message.setSubject("Your One-Time Password (OTP)");
-        message.setText("Your OTP code is: " + otp + "\n\nIt will expire in 2 minutes.");
+    @Value("${SENDGRID_API_KEY}")
+    private String sendGridApiKey;
 
-        mailSender.send(message);
+    public void sendOtpEmail(String toEmail, String otp) throws IOException {
+        Email from = new Email(sendGridEmail);
+        String subject = "Your One-Time Password (OTP)";
+        Email to = new Email(toEmail);
+        Content content = new Content("text/plain", "Your OTP code is: " + otp + "\n\nIt will expire in 2 minutes.");
+        Mail mail = new Mail(from, subject, to, content);
+
+        SendGrid sg = new SendGrid(sendGridApiKey);// sg.setDataResidency("eu");
+        // uncomment the above line if you are sending mail using a regional EU subuser
+        Request request = new Request();
+        try {
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+            Response response = sg.api(request);
+            log.info("📧 Email sent to {} | Status: {}", toEmail, response.getStatusCode());
+        } catch (IOException ex) {
+            throw ex;
+        }
     }
 }

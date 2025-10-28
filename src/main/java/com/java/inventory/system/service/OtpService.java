@@ -10,10 +10,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -30,7 +30,7 @@ public class OtpService {
     private final SecureRandom random = new SecureRandom();
     private static final long OTP_EXPIRATION_MINUTES = 2;
 
-    public String generateOtp(String username, String email) {
+    public String generateOtp(String username, String email) throws IOException {
         String otp = String.format("%06d", random.nextInt(999999));
 
         redisTemplate.opsForValue().set(
