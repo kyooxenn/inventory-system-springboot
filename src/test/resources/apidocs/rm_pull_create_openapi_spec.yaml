@@ -332,6 +332,24 @@ paths:
             '*/*':
               schema:
                 type: object
+  /api/auth/generate-otp:
+    post:
+      tags:
+      - auth-controller
+      operationId: generateOtp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OtpVerificationRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
   /v1/product/search:
     get:
       tags:
@@ -483,6 +501,8 @@ components:
         tempToken:
           type: string
         otp:
+          type: string
+        email:
           type: string
     AuthRequest:
       type: object

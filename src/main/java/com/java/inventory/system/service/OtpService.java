@@ -30,7 +30,15 @@ public class OtpService {
     private final SecureRandom random = new SecureRandom();
     private static final long OTP_EXPIRATION_MINUTES = 2;
 
-    public String generateOtp(String username, String email) throws IOException {
+    public ResponseEntity<?> generateOtp(OtpVerificationRequest request) throws IOException {
+
+        String username = redisTemplate.opsForValue().get("TEMP_LOGIN:" + request.getTempToken());
+
+        if (username == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid or expired session"));
+        }
+
         String otp = String.format("%06d", random.nextInt(999999));
 
         redisTemplate.opsForValue().set(
@@ -40,10 +48,11 @@ public class OtpService {
                 TimeUnit.MINUTES
         );
 
-        emailSenderService.sendOtpEmail(email, otp);
+        emailSenderService.sendOtpEmail(request.getEmail(), otp);
 
-        log.info("OTP for " + username + ": " + otp);
-        return otp;
+        return ResponseEntity.ok(Map.of(
+                "message", "OTP sent to your registered email"
+        ));
     }
 
     public ResponseEntity<?> verifyOtp(OtpVerificationRequest request) {

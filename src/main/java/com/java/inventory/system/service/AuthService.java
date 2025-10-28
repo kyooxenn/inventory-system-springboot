@@ -50,7 +50,6 @@ public class AuthService {
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
             if (BooleanUtils.isFalse(user.getIsVerified())) {
-                otpService.generateOtp(user.getUsername(), user.getEmail());
 
                 String tempToken = UUID.randomUUID().toString();
 
@@ -64,8 +63,8 @@ public class AuthService {
 
                 // ✅ Step 6: Return response (without JWT yet)
                 return ResponseEntity.ok(Map.of(
-                        "message", "OTP sent to your registered email or phone",
-                        "tempToken", tempToken
+                        "tempToken", tempToken,
+                        "email", user.getEmail()
                 ));
 
             } else {

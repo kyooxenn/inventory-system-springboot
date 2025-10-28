@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin
@@ -26,6 +28,11 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody AuthRequest request) {
         return authService.register(request);
+    }
+
+    @PostMapping("/generate-otp")
+    public ResponseEntity<?> generateOtp(@RequestBody OtpVerificationRequest request) throws IOException {
+        return otpService.generateOtp(request);
     }
 
     @PostMapping("/verify-otp")
