@@ -5,16 +5,20 @@ import com.java.inventory.system.model.AuthResponse;
 import com.java.inventory.system.model.User;
 import com.java.inventory.system.repository.UserRepository;
 import com.java.inventory.system.security.JwtUtil;
+import com.java.inventory.system.util.OtpGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.IOException;
-import java.security.SecureRandom;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -27,10 +31,9 @@ public class OtpService {
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final StringRedisTemplate redisTemplate;
-    private final SecureRandom random = new SecureRandom();
-    private static final long OTP_EXPIRATION_MINUTES = 2;
+    private static final long OTP_EXPIRATION_MINUTES = 5;
 
-    public ResponseEntity<?> generateOtp(OtpVerificationRequest request) throws IOException {
+    public ResponseEntity<?> sendOtpEmail(OtpVerificationRequest request) throws IOException {
 
         String username = redisTemplate.opsForValue().get("TEMP_LOGIN:" + request.getTempToken());
 
@@ -39,7 +42,7 @@ public class OtpService {
                     .body(Map.of("error", "Invalid or expired session"));
         }
 
-        String otp = String.format("%06d", random.nextInt(999999));
+        String otp = OtpGenerator.generateOtp();
 
         redisTemplate.opsForValue().set(
                 "OTP:" + username,
@@ -55,7 +58,7 @@ public class OtpService {
         ));
     }
 
-    public ResponseEntity<?> verifyOtp(OtpVerificationRequest request) {
+    public ResponseEntity<?> verifyOtpEmail(OtpVerificationRequest request) {
         try {
             String username = redisTemplate.opsForValue().get("TEMP_LOGIN:" + request.getTempToken());
 
@@ -104,5 +107,20 @@ public class OtpService {
             return true;
         }
         return false;
+    }
+
+    @Autowired
+    private TelegramLongPollingBot telegramBot;
+    public void sendOtpTelegram(String chatId, String otp) {
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId); // User's Telegram chat ID
+        message.setText("Your OTP is: " + otp + ". It expires in 5 minutes.");
+
+        try {
+            telegramBot.execute(message);
+        } catch (TelegramApiException e) {
+            log.error("error: {}", e.getMessage());
+            e.printStackTrace(); // Handle errors (e.g., log or throw custom exception)
+        }
     }
 }

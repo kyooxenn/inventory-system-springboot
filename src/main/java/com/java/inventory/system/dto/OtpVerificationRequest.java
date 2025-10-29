@@ -11,4 +11,5 @@ public class OtpVerificationRequest {
     private String tempToken;
     private String otp;
     private String email;
+    private String mobile;
 }

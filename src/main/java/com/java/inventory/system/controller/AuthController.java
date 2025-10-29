@@ -30,13 +30,13 @@ public class AuthController {
         return authService.register(request);
     }
 
-    @PostMapping("/generate-otp")
-    public ResponseEntity<?> generateOtp(@RequestBody OtpVerificationRequest request) throws IOException {
-        return otpService.generateOtp(request);
+    @PostMapping("/send-otp")
+    public ResponseEntity<?> sendOtpEmail(@RequestBody OtpVerificationRequest request) throws IOException {
+        return otpService.sendOtpEmail(request);
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<?> verifyOtp(@RequestBody OtpVerificationRequest request) {
-        return otpService.verifyOtp(request);
+    public ResponseEntity<?> verifyOtpEmail(@RequestBody OtpVerificationRequest request) {
+        return otpService.verifyOtpEmail(request);
     }
 }

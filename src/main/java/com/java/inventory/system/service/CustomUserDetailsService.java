@@ -29,4 +29,15 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         return new org.springframework.security.core.userdetails.User(u.getUsername(), u.getPassword(), authorities);
     }
+
+    public String getTelegramChatId(String userId) {
+        User user = userRepository.findByUsername(userId).orElse(null);
+        return user != null ? user.getTelegramChatId() : null;
+    }
+
+    public void updateTelegramChatId(String userId, String chatId) {
+        User user = userRepository.findByUsername(userId).orElse(null);
+        user.setTelegramChatId(chatId);
+        userRepository.save(user);
+    }
 }

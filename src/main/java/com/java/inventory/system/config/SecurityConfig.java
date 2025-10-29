@@ -58,6 +58,7 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/api/health",
                                 "/redis/all",
+                                "/api/telegram/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
                         .anyRequest().authenticated()

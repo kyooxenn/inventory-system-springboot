@@ -13,27 +13,29 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor // ✅ fixes the error
 @AllArgsConstructor
 public class User {
-  @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-  @Column(unique = true, nullable = false)
-  private String username;
+    @Column(unique = true, nullable = false)
+    private String username;
 
-  @Column(nullable = false)
-  private String password;
+    @Column(nullable = false)
+    private String password;
 
-  @Column(nullable = false)
-  private String email;
+    @Column(nullable = false)
+    private String email;
 
-  @Column(nullable = false)
-  private String mobile;
+    @Column(nullable = false)
+    private String mobile;
 
     @Builder.Default // Ensures default value in builder
     @Column(nullable = false)
     private Boolean isVerified = false;
 
-  // store roles as comma separated or a join table; simple example:
-  private String roles; // e.g. "ROLE_USER,ROLE_ADMIN"
+    // store roles as comma separated or a join table; simple example:
+    private String roles; // e.g. "ROLE_USER,ROLE_ADMIN"
 
-  // getters/setters
+    private String telegramChatId;
+
 }
