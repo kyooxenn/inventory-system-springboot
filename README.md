@@ -15,9 +15,14 @@ https://inventory-system-springboot-sea.onrender.com/swagger-ui/index.html
 import curl on postman
 ### ✅ Register (optional)
 ```
-curl -X POST https://inventory-system-springboot-sea.onrender.com/api/auth/register \
--H "Content-Type: application/json" \
--d '{"username":"bob","password":"secret"}'
+curl --location 'https://inventory-system-springboot-sea.onrender.com/api/auth/register' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "username": "bob",
+    "password": "secret",
+    "email": "your_email_adress@gmail.com",
+    "mobile":"+63912345678"
+}'
 ```
 
 ### 🔑 Login — Get Token
@@ -26,9 +31,48 @@ curl -X POST https://inventory-system-springboot-sea.onrender.com/api/auth/login
 -H "Content-Type: application/json" \
 -d '{"username":"bob","password":"secret"}'
 ```
-###  Sample Login Response: 
+###  Sample Login Response (Verified User): 
 ```
-{"token":"eyJ..."}
+{
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyb290Iiwicm9sZXMiOiJST0xFX0FETUlOIiwiaWF0IjoxNzYxNzExMTM5LCJleHAiOjE3NjE3MTQ3Mzl9.mUZS0Jg7fCXon2fjkQwroBgA5nHiRfEsHle4qsvB_pU"
+}
+```
+###  Sample Login Response (Unverified User):
+```
+{
+    "email": "your_email_adress@gmail.com",
+    "tempToken": "4d4d0073-8ed9-4d12-b4fe-f857b6403ef9"
+}
+```
+
+### 🔑 Generate OTP (For Unverified User)
+```
+curl --location 'https://inventory-system-springboot-sea.onrender.com/api/auth/generate-otp' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+"tempToken": "4d4d0073-8ed9-4d12-b4fe-f857b6403ef9",
+"email": "your_email_adress@gmail.com"
+}'
+```
+###  Sample Generate OTP Response (Unverified User):
+```
+{
+    "message":"OTP sent to your registered email"
+}
+```
+
+### 🔑 Verify OTP (For Unverified User)
+```
+curl --location 'https://inventory-system-springboot-sea.onrender.com/api/auth/verify-otp' \
+--header 'Content-Type: application/json' \
+--data '{
+"tempToken": "4d4d0073-8ed9-4d12-b4fe-f857b6403ef9",
+"otp": "123456"
+}'
+```
+###  Sample Verify OTP Response (Unverified User):
+```
+{"error":"Invalid or expired session"}
 ```
 
 ###  Health Check Endpoint
