@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -26,11 +27,13 @@ public class ProductController implements ProductApi {
 
     private final ProductService productService;
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllProducts(@PageableDefault(size = 5) Pageable pageable) {
         return ResponseEntity.ok(productService.getAllProducts(pageable));
     }
 
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("/search")
     public ResponseEntity<Map<String, Object>> getProductsByNameAndCategory(
             @RequestParam(required = false) String itemName,
@@ -39,22 +42,26 @@ public class ProductController implements ProductApi {
         return ResponseEntity.ok(productService.findByItemNameAndCategory(itemName, category, pageable));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping(value = "/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable String id) {
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<Product> createProduct(@Valid @RequestBody ProductRequest request) throws ProductSvcException {
         return ResponseEntity.ok(productService.createProduct(request));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<Product> updateProduct(@PathVariable String id, @Valid @RequestBody ProductRequest request)
             throws ProductSvcException {
         return ResponseEntity.ok(productService.updateProduct(id, request));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Map<String, String>> deleteProduct(@PathVariable String id) {
         return productService.deleteProduct(id) ? ResponseEntity.ok(Map.of("message", "Product deleted successfully.")) :

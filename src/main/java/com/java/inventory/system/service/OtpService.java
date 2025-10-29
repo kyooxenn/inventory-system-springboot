@@ -73,7 +73,9 @@ public class OtpService {
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+            // verify user and give permission
             user.setIsVerified(Boolean.TRUE);
+            user.setRoles("ROLE_ADMIN");
             userRepository.save(user);
 
             String jwt = jwtUtil.generateToken(username, user.getRoles());

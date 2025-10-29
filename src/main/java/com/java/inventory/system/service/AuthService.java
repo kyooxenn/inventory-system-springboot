@@ -103,6 +103,7 @@ public class AuthService {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
             user.setEmail(request.getEmail());
             user.setMobile(request.getMobile());
+            // Update once account verification is complete and user is promoted to admin.
             user.setRoles("ROLE_USER");
 
             userRepository.save(user);

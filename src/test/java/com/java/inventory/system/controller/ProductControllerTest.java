@@ -51,7 +51,7 @@ class ProductControllerTest {
         log.info("Mock server running at: {}", mockWebServer.url("/"));
 
         // Generate a valid JWT for testing
-        token = "Bearer " + jwtUtil.generateToken("testuser", "ROLE_USER");
+        token = "Bearer " + jwtUtil.generateToken("testuser", "ROLE_ADMIN");
     }
 
     @AfterEach
