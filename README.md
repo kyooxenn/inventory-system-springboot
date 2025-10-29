@@ -32,13 +32,13 @@ curl -X POST https://inventory-system-springboot-sea.onrender.com/api/auth/login
 -d '{"username":"bob","password":"secret"}'
 ```
 ###  Sample Login Response (Verified User): 
-```
+```json
 {
     "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyb290Iiwicm9sZXMiOiJST0xFX0FETUlOIiwiaWF0IjoxNzYxNzExMTM5LCJleHAiOjE3NjE3MTQ3Mzl9.mUZS0Jg7fCXon2fjkQwroBgA5nHiRfEsHle4qsvB_pU"
 }
 ```
 ###  Sample Login Response (Unverified User):
-```
+```json
 {
     "email": "your_email_adress@gmail.com",
     "tempToken": "4d4d0073-8ed9-4d12-b4fe-f857b6403ef9"
@@ -55,7 +55,7 @@ curl --location 'https://inventory-system-springboot-sea.onrender.com/api/auth/g
 }'
 ```
 ###  Sample Generate OTP Response (Unverified User):
-```
+```json
 {
     "message":"OTP sent to your registered email"
 }
@@ -70,9 +70,20 @@ curl --location 'https://inventory-system-springboot-sea.onrender.com/api/auth/v
 "otp": "123456"
 }'
 ```
-###  Sample Verify OTP Response (Unverified User):
+### Sample OTP Verification Response (Unverified User)
+
+#### ❌ Error Response
+```json
+{
+  "error": "Invalid or expired session"
+}
 ```
-{"error":"Invalid or expired session"}
+#### ✅ Success Response
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyb290Iiwicm9sZXMiOiJST0xFX0FETUlOIiwiaWF0IjoxNzYxNzExOTM5LCJleHAiOjE3NjE3MTU1Mzl9.0gh8moNC5RHWD7IM128kSbasqHiETuGx_Ql2Pt57G3k"
+}
+
 ```
 
 ###  Health Check Endpoint
