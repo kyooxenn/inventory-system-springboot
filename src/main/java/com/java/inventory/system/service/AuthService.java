@@ -1,5 +1,6 @@
 package com.java.inventory.system.service;
 
+import com.java.inventory.system.constant.InventoryConstant;
 import com.java.inventory.system.dto.AuthRequest;
 import com.java.inventory.system.model.AuthResponse;
 import com.java.inventory.system.model.User;
@@ -37,9 +38,6 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final StringRedisTemplate redisTemplate;
 
-    // Expiration time for temporary login session
-    private static final long TEMP_TOKEN_EXPIRATION_MINUTES = 5;
-
     public ResponseEntity<?> login(AuthRequest request) {
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -57,7 +55,7 @@ public class AuthService {
                 redisTemplate.opsForValue().set(
                         "TEMP_LOGIN:" + tempToken,
                         user.getUsername(),
-                        TEMP_TOKEN_EXPIRATION_MINUTES,
+                        InventoryConstant.TEMP_TOKEN_EXPIRATION_MINUTES,
                         TimeUnit.MINUTES
                 );
 

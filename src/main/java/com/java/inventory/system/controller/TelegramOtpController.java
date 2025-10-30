@@ -1,36 +1,67 @@
 package com.java.inventory.system.controller;
 
+import com.java.inventory.system.constant.InventoryConstant;
 import com.java.inventory.system.service.CustomUserDetailsService;
 import com.java.inventory.system.service.OtpService;
 import com.java.inventory.system.util.OtpGenerator;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
-
 
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/telegram")
-@Slf4j
-@CrossOrigin
+@RequiredArgsConstructor
 public class TelegramOtpController {
 
-    @Autowired
-    private OtpService otpService;
+    private final OtpService otpService;
+    private final StringRedisTemplate redisTemplate;
+    private final CustomUserDetailsService userService; // For getting chatId
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+    @PostMapping("/send-otp")
+    public String sendOtpTelegram(HttpServletRequest request) {
+        String username = validateTempTokenAndGetUserId(request);
+        String chatId = userService.getTelegramChatId(username);
+        if (chatId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Telegram not linked for user: " + username);
+        }
+        String otp = OtpGenerator.generateOtp();
 
-    @Autowired
-    private CustomUserDetailsService userService; // For getting chatId
+        redisTemplate.opsForValue().set(
+                "OTP:" + username,
+                otp,
+                InventoryConstant.OTP_EXPIRATION_MINUTES,
+                TimeUnit.MINUTES
+        );
+        otpService.sendOtpTelegram(chatId, otp);
+        return "OTP sent to your linked Telegram.";
+    }
+
+    @GetMapping("/generate-link-code")
+    public Map<String, String> generateLinkCode(HttpServletRequest request) {
+        String username = validateTempTokenAndGetUserId(request);
+        String code = UUID.randomUUID().toString();
+        redisTemplate.opsForValue().set(code, username, InventoryConstant.OTP_EXPIRATION_MINUTES, TimeUnit.MINUTES);
+        return Map.of("code", code, "botUsername", "nvent_otp_generator_bot");
+    }
+
+    @GetMapping("/check-link")
+    public boolean checkLink(HttpServletRequest request) {
+        String username = validateTempTokenAndGetUserId(request);
+        String chatId = userService.getTelegramChatId(username);
+        return StringUtils.isNotBlank(chatId);
+    }
 
     // Helper method to validate tempToken and get userId
     private String validateTempTokenAndGetUserId(HttpServletRequest request) {
@@ -46,39 +77,15 @@ public class TelegramOtpController {
         return userId;
     }
 
-    @PostMapping("/send-otp")
-    public String sendOtpTelegram(HttpServletRequest request) {
-        String username = validateTempTokenAndGetUserId(request);
-        String chatId = userService.getTelegramChatId(username);
-        if (chatId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Telegram not linked for user: " + username);
+
+    @GetMapping("/link-status/{code}")
+    public ResponseEntity<?> getTelegramLinkStatus(@PathVariable String code) {
+        String result = redisTemplate.opsForValue().get("linkResult:" + code);
+
+        if (result == null) {
+            return ResponseEntity.ok(Map.of("status", "pending"));
         }
-        String otp = OtpGenerator.generateOtp();
 
-        redisTemplate.opsForValue().set(
-                "OTP:" + username,
-                otp,
-                5,
-                TimeUnit.MINUTES
-        );
-        otpService.sendOtpTelegram(chatId, otp);
-        return "OTP sent to your linked Telegram.";
-    }
-
-    @GetMapping("/generate-link-code")
-    public Map<String, String> generateLinkCode(HttpServletRequest request) {
-        String username = validateTempTokenAndGetUserId(request);
-        String code = UUID.randomUUID().toString();
-        log.info("user id {}", username);
-        redisTemplate.opsForValue().set(code, username, 5, TimeUnit.MINUTES);
-        return Map.of("code", code, "botUsername", "nvent_otp_generator_bot");
-    }
-
-    @GetMapping("/check-link")
-    public boolean checkLink(HttpServletRequest request) {
-        String username = validateTempTokenAndGetUserId(request);
-        String chatId = userService.getTelegramChatId(username);
-        log.info("chat id: [{}]", chatId);
-        return StringUtils.isNotBlank(chatId);
+        return ResponseEntity.ok(Map.of("status", result));
     }
 }

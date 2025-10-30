@@ -36,7 +36,7 @@ public class AuthController {
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<?> verifyOtpEmail(@RequestBody OtpVerificationRequest request) {
-        return otpService.verifyOtpEmail(request);
+    public ResponseEntity<?> verifyOtp(@RequestBody OtpVerificationRequest request) {
+        return otpService.verifyOtp(request);
     }
 }
