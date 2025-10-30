@@ -294,7 +294,7 @@ paths:
     post:
       tags:
       - auth-controller
-      operationId: verifyOtpEmail
+      operationId: verifyOtp
       requestBody:
         content:
           application/json:
@@ -447,6 +447,24 @@ paths:
                 type: object
                 additionalProperties:
                   type: object
+  /api/telegram/link-status/{code}:
+    get:
+      tags:
+      - telegram-otp-controller
+      operationId: getTelegramLinkStatus
+      parameters:
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
   /api/telegram/generate-link-code:
     get:
       tags:
