@@ -81,7 +81,7 @@ public class OtpService {
                 TimeUnit.MINUTES
         );
 
-        // emailSenderService.sendOtpEmail(request.getEmail(), otp);
+        emailSenderService.sendOtpEmail(request.getEmail(), otp);
 
         return ResponseEntity.ok(Map.of(
                 "message", "OTP sent to your registered email"
@@ -127,6 +127,7 @@ public class OtpService {
 
             String jwt = jwtUtil.generateToken(username, user.getRoles());
 
+            redisTemplate.delete("OTP_ATTEMPT:" + username);
             redisTemplate.delete("TEMP_LOGIN:" + request.getTempToken());
 
             return ResponseEntity.ok(new AuthResponse(jwt));

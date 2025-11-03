@@ -40,7 +40,7 @@ public class TelegramOtpController {
         }
 
         // 🔒 Limit resend attempts to 3 per 10 minutes
-        String attemptKey = "OTP_ATTEMPTS_TG:" + username;
+        String attemptKey = "OTP_ATTEMPT:" + username;;
         int maxAttempts = 3;
         long cooldownMinutes = 10;
 
