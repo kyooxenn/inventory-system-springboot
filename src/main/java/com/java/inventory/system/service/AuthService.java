@@ -47,29 +47,22 @@ public class AuthService {
             User user = userRepository.findByUsername(request.getUsername())
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-            if (BooleanUtils.isFalse(user.getIsVerified())) {
+            String tempToken = UUID.randomUUID().toString();
 
-                String tempToken = UUID.randomUUID().toString();
+            redisTemplate.opsForValue().set(
+                    "TEMP_LOGIN:" + tempToken,
+                    user.getUsername(),
+                    InventoryConstant.TEMP_TOKEN_EXPIRATION_MINUTES,
+                    TimeUnit.MINUTES
+            );
 
-                // ✅ Step 5: Store the username in Redis with expiration
-                redisTemplate.opsForValue().set(
-                        "TEMP_LOGIN:" + tempToken,
-                        user.getUsername(),
-                        InventoryConstant.TEMP_TOKEN_EXPIRATION_MINUTES,
-                        TimeUnit.MINUTES
-                );
-
-                // ✅ Step 6: Return response (without JWT yet)
-                return ResponseEntity.ok(Map.of(
-                        "tempToken", tempToken,
-                        "email", user.getEmail()
-                ));
-
-            } else {
-                String jwt = jwtUtil.generateToken(request.getUsername(), user.getRoles());
-                return ResponseEntity.ok(new AuthResponse(jwt));
-            }
-
+            // ✅ Step 6: Return response (without JWT yet)
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(Map.of(
+                            "tempToken", tempToken,
+                            "email", user.getEmail()
+                    ));
         } catch (BadCredentialsException e) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
@@ -106,13 +99,22 @@ public class AuthService {
 
             userRepository.save(user);
 
-            // Return success response
+            String tempToken = UUID.randomUUID().toString();
+
+            redisTemplate.opsForValue().set(
+                    "TEMP_LOGIN:" + tempToken,
+                    user.getUsername(),
+                    InventoryConstant.TEMP_TOKEN_EXPIRATION_MINUTES,
+                    TimeUnit.MINUTES
+            );
+
             return ResponseEntity
                     .status(HttpStatus.CREATED)
-                    .body(Map.of("message", "User registered successfully"));
+                    .body(Map.of("message", "User registered successfully",
+                            "tempToken", tempToken,
+                            "email", user.getEmail()));
 
         } catch (Exception e) {
-            // Return generic error response
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));

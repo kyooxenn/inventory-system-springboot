@@ -30,22 +30,66 @@ public class TelegramOtpController {
     private final CustomUserDetailsService userService; // For getting chatId
 
     @PostMapping("/send-otp")
-    public String sendOtpTelegram(HttpServletRequest request) {
+    public ResponseEntity<?> sendOtpTelegram(HttpServletRequest request) {
         String username = validateTempTokenAndGetUserId(request);
         String chatId = userService.getTelegramChatId(username);
+
         if (chatId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Telegram not linked for user: " + username);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Telegram not linked for user: " + username));
         }
+
+        // 🔒 Limit resend attempts to 3 per 10 minutes
+        String attemptKey = "OTP_ATTEMPTS_TG:" + username;
+        int maxAttempts = 3;
+        long cooldownMinutes = 10;
+
+        String attemptsStr = redisTemplate.opsForValue().get(attemptKey);
+        int attempts = (attemptsStr != null) ? Integer.parseInt(attemptsStr) : 0;
+
+        if (attempts >= maxAttempts) {
+            // 🕒 Get remaining cooldown time in seconds
+            Long ttlSeconds = redisTemplate.getExpire(attemptKey, TimeUnit.SECONDS);
+
+            if (ttlSeconds == null || ttlSeconds <= 0) {
+                ttlSeconds = cooldownMinutes * 60;
+            }
+
+            long remainingMinutes = ttlSeconds / 60;
+            long remainingSeconds = ttlSeconds % 60;
+
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(Map.of(
+                            "error", String.format(
+                                    "Maximum resend attempts reached. Please try again in %d minutes and %d seconds.",
+                                    remainingMinutes, remainingSeconds
+                            )
+                    ));
+        }
+
+        // ✅ Increment attempts count (expire after cooldown)
+        redisTemplate.opsForValue().increment(attemptKey);
+        redisTemplate.expire(attemptKey, cooldownMinutes, TimeUnit.MINUTES);
+
+        // 🔢 Generate OTP
         String otp = OtpGenerator.generateOtp();
 
+        // 💾 Store OTP with expiration
         redisTemplate.opsForValue().set(
                 "OTP:" + username,
                 otp,
                 InventoryConstant.OTP_EXPIRATION_MINUTES,
                 TimeUnit.MINUTES
         );
+
+        // 📩 Send OTP via Telegram
         otpService.sendOtpTelegram(chatId, otp);
-        return "OTP sent to your linked Telegram.";
+
+        return ResponseEntity.ok(Map.of(
+                "message", "OTP sent to your linked Telegram account.",
+                "attempts_used", attempts + 1,
+                "attempts_remaining", Math.max(0, maxAttempts - (attempts + 1))
+        ));
     }
 
     @GetMapping("/generate-link-code")

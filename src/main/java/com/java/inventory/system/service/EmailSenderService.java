@@ -32,7 +32,7 @@ public class EmailSenderService {
         Email from = new Email(sendGridEmail);
         String subject = "Your One-Time Password (OTP)";
         Email to = new Email(toEmail);
-        Content content = new Content("text/plain", "Your OTP code is: " + otp + "\n\nIt will expire in 2 minutes.");
+        Content content = new Content("text/plain", "Your OTP code is: " + otp + "\n\nIt will expire in 5 minutes.");
         Mail mail = new Mail(from, subject, to, content);
 
         SendGrid sg = new SendGrid(sendGridApiKey);// sg.setDataResidency("eu");

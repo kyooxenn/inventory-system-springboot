@@ -34,7 +34,6 @@ public class OtpService {
     private final TelegramLongPollingBot telegramBot;
 
     public ResponseEntity<?> sendOtpEmail(OtpVerificationRequest request) throws IOException {
-
         String username = redisTemplate.opsForValue().get("TEMP_LOGIN:" + request.getTempToken());
 
         if (username == null) {
@@ -42,6 +41,29 @@ public class OtpService {
                     .body(Map.of("error", "Invalid or expired session"));
         }
 
+        String attemptKey = "OTP_ATTEMPT:" + username;
+        String attemptCountStr = redisTemplate.opsForValue().get(attemptKey);
+        int attemptCount = attemptCountStr != null ? Integer.parseInt(attemptCountStr) : 0;
+
+        if (attemptCount >= 3) {
+            // 🔹 Get remaining cooldown time (in seconds)
+            Long ttlSeconds = redisTemplate.getExpire(attemptKey, TimeUnit.SECONDS);
+            long minutesLeft = ttlSeconds != null && ttlSeconds > 0 ? ttlSeconds / 60 : 0;
+            long secondsLeft = ttlSeconds != null && ttlSeconds > 0 ? ttlSeconds % 60 : 0;
+
+            String timeMessage = String.format(
+                    "Maximum resend attempts reached. Please try again in %d minute%s and %d second%s.",
+                    minutesLeft,
+                    minutesLeft == 1 ? "" : "s",
+                    secondsLeft,
+                    secondsLeft == 1 ? "" : "s"
+            );
+
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(Map.of("error", timeMessage));
+        }
+
+        // 🔹 Generate OTP
         String otp = OtpGenerator.generateOtp();
 
         redisTemplate.opsForValue().set(
@@ -51,7 +73,15 @@ public class OtpService {
                 TimeUnit.MINUTES
         );
 
-        emailSenderService.sendOtpEmail(request.getEmail(), otp);
+        // 🔹 Increment attempt count with 10-minute expiry
+        redisTemplate.opsForValue().set(
+                attemptKey,
+                String.valueOf(attemptCount + 1),
+                10, // reset counter after 10 minutes
+                TimeUnit.MINUTES
+        );
+
+        // emailSenderService.sendOtpEmail(request.getEmail(), otp);
 
         return ResponseEntity.ok(Map.of(
                 "message", "OTP sent to your registered email"
