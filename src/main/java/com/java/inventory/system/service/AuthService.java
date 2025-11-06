@@ -88,6 +88,13 @@ public class AuthService {
                         .body(Map.of("error", "Username already exists"));
             }
 
+            // Check if email already exists
+            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+                return ResponseEntity
+                        .status(HttpStatus.CONFLICT)
+                        .body(Map.of("error", "This email is already registered. Please use a different email address."));
+            }
+
             // Create and save new user
             User user = new User();
             user.setUsername(request.getUsername());
