@@ -40,6 +40,7 @@ public class AuthService {
 
     public ResponseEntity<?> login(AuthRequest request) {
         try {
+            // check username and password input if valid else return BadCredentialsException
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
             );
@@ -56,7 +57,7 @@ public class AuthService {
                     TimeUnit.MINUTES
             );
 
-            // ✅ Step 6: Return response (without JWT yet)
+            // create temporary token after login (this will be used for otp verification)
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(Map.of(

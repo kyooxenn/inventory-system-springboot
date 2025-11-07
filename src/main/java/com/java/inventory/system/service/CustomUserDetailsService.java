@@ -18,16 +18,16 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User u = userRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         // Split roles, trim, and prefix with "ROLE_" (standardize to uppercase)
-        var authorities = Arrays.stream(u.getRoles().split(","))
+        var authorities = Arrays.stream(user.getRoles().split(","))
                 .map(String::trim)
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()))
                 .collect(Collectors.toList());
 
-        return new org.springframework.security.core.userdetails.User(u.getUsername(), u.getPassword(), authorities);
+        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), authorities);
     }
 
     public String getTelegramChatId(String username) {

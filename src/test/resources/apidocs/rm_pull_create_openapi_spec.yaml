@@ -289,7 +289,7 @@ paths:
           content:
             '*/*':
               schema:
-                type: string
+                type: object
   /api/auth/verify-otp:
     post:
       tags:

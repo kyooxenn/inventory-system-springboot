@@ -10,16 +10,17 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 @Configuration
 public class DataInitializer {
 
+    // create admin user when application started.
     @Bean
     CommandLineRunner init(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
         return args -> {
-            // Check if root user already exists
-            if (userRepository.findByUsername("root").isEmpty()) {
+            // Check if admin user already exists
+            if (userRepository.findByUsername("admin").isEmpty()) {
                 User u = new User();
-                u.setUsername("root");
-                u.setPassword(passwordEncoder.encode("root"));
+                u.setUsername("admin");
+                u.setPassword(passwordEncoder.encode("1234"));
                 u.setRoles("ROLE_ADMIN");
-                u.setEmail("bobila.norbert@gmail.com");
+                u.setEmail("norbertbobila12@gmail.com");
                 u.setMobile("+639603717056");
                 u.setIsVerified(false);
                 userRepository.save(u);
