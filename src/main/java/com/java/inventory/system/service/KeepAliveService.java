@@ -1,6 +1,8 @@
 package com.java.inventory.system.service;
 
+import com.java.inventory.system.repository.ProductRepository;
 import com.sun.management.OperatingSystemMXBean;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -11,11 +13,16 @@ import org.springframework.web.client.RestTemplate;
 import java.lang.management.ManagementFactory;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class KeepAliveService {
 
+    private final RedisViewerService redisViewerService;
+    private final ProductRepository productRepository;
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${app.keepalive.health-url}")
@@ -33,9 +40,9 @@ public class KeepAliveService {
             int hour = now.getHour();
 
             // ✅ 6 AM – 12 AM → ping every 5 min
-            // ✅ 12 AM – 6 AM → ping every 14 min
+            // ✅ 12 AM – 6 AM → ping every 10 min
             boolean isDayTime = (hour >= 6 && hour < 24);
-            int pingIntervalMinutes = isDayTime ? 5 : 14;
+            int pingIntervalMinutes = isDayTime ? 5 : 10;
 
             int currentMinute = now.getMinute();
             if (currentMinute % pingIntervalMinutes != 0) {
@@ -51,6 +58,12 @@ public class KeepAliveService {
                 consecutiveHighCpuCount = 0; // reset if CPU is normal
                 log.info("⏱️ Keep-alive check at {} (interval: {} min, CPU: {}%)",
                         now, pingIntervalMinutes, (int) (cpuLoad * 100));
+
+                Map<String, Object> serviceAllKeyValues = redisViewerService.getAllKeyValues();
+                log.info("serviceAllKeyValues: [{}]", serviceAllKeyValues);
+
+                List<?> products = productRepository.findAll();
+                log.info("loaded all products: [{}]", products);
 
                 ResponseEntity<String> response =
                         restTemplate.getForEntity(healthCheckUrl, String.class);
