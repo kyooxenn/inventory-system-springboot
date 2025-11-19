@@ -26,10 +26,10 @@ public class HealthController {
     public ResponseEntity<String> health() {
         try {
             Map<String, Object> serviceAllKeyValues = redisViewerService.getAllKeyValues();
-            log.info("serviceAllKeyValues: [{}]", serviceAllKeyValues);
+            log.info("loaded all service key values: [{}]", serviceAllKeyValues.size());
 
             List<?> products = productRepository.findAll();
-            log.info("loaded all products: [{}]", products);
+            log.info("loaded all products: [{}]", products.size());
 
             String message = "✅ Inventory System API is alive! All systems operational 🚀";
             return ResponseEntity.ok(message);
