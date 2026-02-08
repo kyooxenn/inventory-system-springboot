@@ -7,6 +7,7 @@ import com.java.inventory.system.model.User;
 import com.java.inventory.system.repository.UserRepository;
 import com.java.inventory.system.security.JwtUtil;
 import com.java.inventory.system.util.OtpGenerator;
+import com.mailjet.client.errors.MailjetException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -18,7 +19,6 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -33,7 +33,7 @@ public class OtpService {
     private final StringRedisTemplate redisTemplate;
     private final TelegramLongPollingBot telegramBot;
 
-    public ResponseEntity<?> sendOtpEmail(OtpVerificationRequest request) throws IOException {
+    public ResponseEntity<?> sendOtpEmail(OtpVerificationRequest request) throws MailjetException {
         String username = redisTemplate.opsForValue().get("TEMP_LOGIN:" + request.getTempToken());
 
         if (username == null) {

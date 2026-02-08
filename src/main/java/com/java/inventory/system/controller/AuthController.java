@@ -4,6 +4,7 @@ import com.java.inventory.system.dto.AuthRequest;
 import com.java.inventory.system.dto.OtpVerificationRequest;
 import com.java.inventory.system.service.AuthService;
 import com.java.inventory.system.service.OtpService;
+import com.mailjet.client.errors.MailjetException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class AuthController {
     }
 
     @PostMapping("/send-otp")
-    public ResponseEntity<?> sendOtpEmail(@RequestBody OtpVerificationRequest request) throws IOException {
+    public ResponseEntity<?> sendOtpEmail(@RequestBody OtpVerificationRequest request) throws MailjetException {
         return otpService.sendOtpEmail(request);
     }
 
