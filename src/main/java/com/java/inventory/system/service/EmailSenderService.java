@@ -12,6 +12,7 @@ import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -58,6 +59,7 @@ public class EmailSenderService {
                     JsonObject firstError = errorsArray.get(0).getAsJsonObject();
                     String message = firstError.get("message").getAsString();
                     log.error("error: {}", message);
+                    throw new BadRequestException(message);
                 } else {
                     log.info("No errors found for sendOtpEmail");
                 }
