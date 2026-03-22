@@ -7,8 +7,6 @@ import com.java.inventory.system.model.Product;
 import com.java.inventory.system.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,15 +24,6 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    /**
-     * Cache the result of fetching all products per page.
-     * Each unique page (page number + size + sort) is cached separately.
-     * Note: Cache eviction should be configured for updates/deletes (e.g., @CacheEvict on save/delete methods).
-     */
-    @Cacheable(
-            value = "allProducts",
-            key = "'page_' + #pageable.pageNumber + '_size_' + #pageable.pageSize + '_sort_' + #pageable.sort.toString()"
-    )
     public Map<String, Object> getAllProducts(Pageable pageable) {
         log.info("Fetching products from database (page={}, size={})...", pageable.getPageNumber(), pageable.getPageSize());
         Page<Product> page = productRepository.findAll(pageable);
@@ -47,15 +36,6 @@ public class ProductService {
         return response;
     }
 
-    /**
-     * Fetch products by name and category with pagination.
-     * Caching added for performance if searches are frequent.
-     * Note: Cache eviction should be configured for updates/deletes.
-     */
-    @Cacheable(
-            value = "searchProducts",
-            key = "'search_' + #productName + '_' + #category + '_page_' + #pageable.pageNumber + '_size_' + #pageable.pageSize + '_sort_' + #pageable.sort.toString()"
-    )
     public Map<String, Object> findByItemNameAndCategory(String productName, String category, Pageable pageable) {
         log.info("Searching products from database (name={}, category={}, page={}, size={})...",
                 productName, category, pageable.getPageNumber(), pageable.getPageSize());
@@ -82,21 +62,12 @@ public class ProductService {
         return response;
     }
 
-    /**
-     * Fetch a single product by ID.
-     * You can also cache this individually if needed.
-     */
-    @Cacheable(value = "productById", key = "#id")
     public Product getProductById(String id) {
         log.info("Fetching product ID [{}] from database...", id);
         return productRepository.findById(id)
                 .orElseThrow(() -> new ProductSvcException(ERR_INVENTORY_MS_NO_PRODUCT_FOUND));
     }
 
-    /**
-     * Create a new product — clear all cache since data changes.
-     */
-    @CacheEvict(value = {"allProducts", "productById"}, allEntries = true)
     public Product createProduct(ProductRequest request) throws ProductSvcException {
         productRepository.findByItemName(request.getItemName())
                 .ifPresent(p -> {
@@ -119,10 +90,6 @@ public class ProductService {
         return savedProduct;
     }
 
-    /**
-     * Update an existing product — also clear caches.
-     */
-    @CacheEvict(value = {"allProducts", "productById"}, allEntries = true)
     public Product updateProduct(String id, ProductRequest request) throws ProductSvcException {
         log.info("Fetching product to update...");
         Product product = productRepository.findById(id)
@@ -158,10 +125,6 @@ public class ProductService {
         product.setUnit(request.getUnit());
     }
 
-    /**
-     * Delete a product — clear all cached products.
-     */
-    @CacheEvict(value = {"allProducts", "productById"}, allEntries = true)
     @Transactional
     public boolean deleteProduct(String id) {
         if (productRepository.existsById(id)) {
