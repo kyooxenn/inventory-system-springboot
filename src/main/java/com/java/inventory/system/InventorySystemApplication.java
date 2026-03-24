@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Component;
@@ -16,8 +15,7 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 
 @EnableCaching
-// 👇 This disables Redis repository scanning but keeps Redis available for caching.
-@SpringBootApplication(exclude = {RedisRepositoriesAutoConfiguration.class})
+@SpringBootApplication
 @EnableScheduling // keep application alive on render, prevents shutdown due to inactivity
 @Slf4j
 public class InventorySystemApplication {
