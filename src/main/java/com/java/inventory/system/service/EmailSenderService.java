@@ -1,22 +1,16 @@
 package com.java.inventory.system.service;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.mailjet.client.ClientOptions;
 import com.mailjet.client.MailjetClient;
-import com.mailjet.client.MailjetRequest;
-import com.mailjet.client.MailjetResponse;
 import com.mailjet.client.errors.MailjetException;
-import com.mailjet.client.resource.Emailv31;
-import com.mailjet.client.transactional.*;
+import com.mailjet.client.transactional.SendContact;
+import com.mailjet.client.transactional.SendEmailsRequest;
+import com.mailjet.client.transactional.TrackOpens;
+import com.mailjet.client.transactional.TransactionalEmail;
 import com.mailjet.client.transactional.response.SendEmailsResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -40,7 +34,7 @@ public class EmailSenderService {
 
             MailjetClient client = new MailjetClient(options);
 
-            TransactionalEmail message1 = TransactionalEmail
+            TransactionalEmail message = TransactionalEmail
                     .builder()
                     .to(new SendContact(toEmail, toEmail))
                     .from(new SendContact("norbertbobila12@gmail.com", "Norbert Jon Bobila"))
@@ -60,19 +54,17 @@ public class EmailSenderService {
                     .customID("custom-id-value")
                     .build();
 
-            SendEmailsRequest requests = SendEmailsRequest
+            SendEmailsRequest request = SendEmailsRequest
                     .builder()
-                    .message(message1) // you can add up to 50 messages per request
+                    .message(message)
                     .build();
 
-            // act
-            log.info("initiate SendEmailsRequest {}", requests);
-            SendEmailsResponse responses = requests.sendWith(client);
+            SendEmailsResponse responses = request.sendWith(client);
             log.info("status for responses: {}", responses);
 
 
         } catch (MailjetException ex) {
-            log.error("Mailjet error messsage: [{}]", ex.getMessage());
+            log.error("MailjetException error message: [{}]", ex.getMessage());
             throw ex;
         }
     }
