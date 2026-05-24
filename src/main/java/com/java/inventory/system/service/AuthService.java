@@ -84,19 +84,25 @@ public class AuthService {
     public ResponseEntity<?> register(@Valid @RequestBody AuthRequest request) {
         try {
 
-            Optional<User> userinfo = userRepository.findByUsername(request.getUsername());
+            Optional<User> existingUser = userRepository.findByUsername(request.getUsername());
 
             // Check if username already exists
-            if (userinfo.isPresent()) {
-                if (BooleanUtils.isTrue(userinfo.get().getIsVerified())) {
+            if (existingUser.isPresent()) {
+                if (BooleanUtils.isTrue(existingUser.get().getIsVerified())) {
                     return ResponseEntity
                             .status(HttpStatus.CONFLICT)
                             .body(Map.of("error", "Username already exists"));
                 } else {
+                    // Update the unverified user with the new request data
+                    existingUser.get().setPassword(passwordEncoder.encode(request.getPassword()));
+                    existingUser.get().setEmail(request.getEmail());
+                    existingUser.get().setMobile(request.getMobile());
+                    userRepository.save(existingUser.get());
+
                     String tempToken = UUID.randomUUID().toString();
                     redisTemplate.opsForValue().set(
                             "TEMP_LOGIN:" + tempToken,
-                            userinfo.get().getUsername(),
+                            existingUser.get().getUsername(),
                             InventoryConstant.TEMP_TOKEN_EXPIRATION_MINUTES,
                             TimeUnit.MINUTES
                     );
@@ -104,7 +110,7 @@ public class AuthService {
                             .status(HttpStatus.CREATED)
                             .body(Map.of("message", "User registered successfully",
                                     "tempToken", tempToken,
-                                    "email", userinfo.get().getEmail()));
+                                    "email", existingUser.get().getEmail()));
                 }
             }
 
