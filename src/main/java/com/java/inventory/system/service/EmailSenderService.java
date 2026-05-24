@@ -2,6 +2,8 @@ package com.java.inventory.system.service;
 
 import com.mailjet.client.ClientOptions;
 import com.mailjet.client.MailjetClient;
+import com.mailjet.client.errors.MailjetClientCommunicationException;
+import com.mailjet.client.errors.MailjetException;
 import com.mailjet.client.transactional.SendContact;
 import com.mailjet.client.transactional.SendEmailsRequest;
 import com.mailjet.client.transactional.TrackOpens;
@@ -29,7 +31,6 @@ public class EmailSenderService {
     @PostConstruct
     public void init() {
         ClientOptions options = ClientOptions.builder()
-                .baseUrl("https://api.mailjet.com") // Forces standard safe web route
                 .apiKey(apiKey)
                 .apiSecretKey(apiSecret)
                 .build();
@@ -37,7 +38,7 @@ public class EmailSenderService {
         this.client = new MailjetClient(options);
     }
 
-    public void sendOtpEmail(String toEmail, String otp) throws Exception {
+    public void sendOtpEmail(String toEmail, String otp) throws MailjetClientCommunicationException, MailjetException {
         try {
             TransactionalEmail message = TransactionalEmail
                     .builder()
@@ -61,11 +62,14 @@ public class EmailSenderService {
                     .build();
 
             // Reuses the established client bean instance
-            SendEmailsResponse responses = request.sendWith(this.client);
-            log.info("Mailjet send response status: {}", responses);
+            SendEmailsResponse response = request.sendWith(this.client);
+            log.info("Mailjet send response status: {}", response);
 
-        } catch (Exception ex) {
-            log.error("Mailjet Communication Exception: {}", ex.getMessage());
+        } catch (MailjetClientCommunicationException e) {
+            log.error("MailjetClientCommunicationException: {}", e.getMessage());
+            throw e;
+        } catch (MailjetException ex) {
+            log.error("MailjetException: {}", ex.getMessage());
             throw ex;
         }
     }
