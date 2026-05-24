@@ -83,6 +83,7 @@ public class EmailSenderService {
                 log.info("📧 Email sent to {} | Status: {}", toEmail, response.getStatus());
             }
         } catch (MailjetException ex) {
+            log.error("Mailjet error: {}", ex.getMessage());
             throw ex;
         }
     }
