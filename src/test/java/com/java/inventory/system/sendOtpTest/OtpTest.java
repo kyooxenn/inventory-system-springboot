@@ -72,7 +72,7 @@ public class OtpTest {
         OtpVerificationRequest otpVerificationRequest = new OtpVerificationRequest();
         otpVerificationRequest.setTempToken("12345");
         otpVerificationRequest.setOtp("123456");
-        otpVerificationRequest.setEmail("norbertbobila@gmail.com");
+        otpVerificationRequest.setEmail("norbertbobila12@gmail.com");
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/send-otp")
                         .header("Authorization", token)
