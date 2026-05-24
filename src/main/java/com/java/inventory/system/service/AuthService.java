@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -82,11 +83,29 @@ public class AuthService {
 
     public ResponseEntity<?> register(@Valid @RequestBody AuthRequest request) {
         try {
+
+            Optional<User> userinfo = userRepository.findByUsername(request.getUsername());
+
             // Check if username already exists
-            if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-                return ResponseEntity
-                        .status(HttpStatus.CONFLICT)
-                        .body(Map.of("error", "Username already exists"));
+            if (userinfo.isPresent()) {
+                if (BooleanUtils.isTrue(userinfo.get().getIsVerified())) {
+                    return ResponseEntity
+                            .status(HttpStatus.CONFLICT)
+                            .body(Map.of("error", "Username already exists"));
+                } else {
+                    String tempToken = UUID.randomUUID().toString();
+                    redisTemplate.opsForValue().set(
+                            "TEMP_LOGIN:" + tempToken,
+                            userinfo.get().getUsername(),
+                            InventoryConstant.TEMP_TOKEN_EXPIRATION_MINUTES,
+                            TimeUnit.MINUTES
+                    );
+                    return ResponseEntity
+                            .status(HttpStatus.CREATED)
+                            .body(Map.of("message", "User registered successfully",
+                                    "tempToken", tempToken,
+                                    "email", userinfo.get().getEmail()));
+                }
             }
 
             // Check if email already exists
