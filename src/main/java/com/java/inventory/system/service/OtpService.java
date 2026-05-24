@@ -33,7 +33,7 @@ public class OtpService {
     private final StringRedisTemplate redisTemplate;
     private final TelegramLongPollingBot telegramBot;
 
-    public ResponseEntity<?> sendOtpEmail(OtpVerificationRequest request) throws MailjetException {
+    public ResponseEntity<?> sendOtpEmail(OtpVerificationRequest request) throws Exception {
         String username = redisTemplate.opsForValue().get("TEMP_LOGIN:" + request.getTempToken());
 
         if (username == null) {

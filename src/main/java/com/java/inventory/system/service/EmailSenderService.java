@@ -10,11 +10,9 @@ import com.mailjet.client.transactional.TransactionalEmail;
 import com.mailjet.client.transactional.response.SendEmailsResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.OkHttpClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.util.concurrent.TimeUnit;
+import jakarta.annotation.PostConstruct;
 
 @Service
 @RequiredArgsConstructor
@@ -27,28 +25,22 @@ public class EmailSenderService {
     @Value("${MJ_APIKEY_PRIVATE}")
     private String apiSecret;
 
-    public void sendOtpEmail(String toEmail, String otp) throws MailjetException {
+    private MailjetClient client;
+
+    @PostConstruct
+    public void init() {
+        // Build an explicit, isolated connection layer
+        ClientOptions options = ClientOptions.builder()
+                .baseUrl("https://api.mailjet.com") // Forces standard safe web route
+                .apiKey(apiKey)
+                .apiSecretKey(apiSecret)
+                .build();
+
+        this.client = new MailjetClient(options);
+    }
+
+    public void sendOtpEmail(String toEmail, String otp) throws Exception {
         try {
-
-            // 1. Force the OkHttpClient to strictly enforce TLS over HTTPS
-            OkHttpClient standardWebClient = new OkHttpClient.Builder()
-                    .connectTimeout(20, TimeUnit.SECONDS)
-                    .readTimeout(20, TimeUnit.SECONDS)
-                    .writeTimeout(20, TimeUnit.SECONDS)
-                    .retryOnConnectionFailure(true)
-                    .protocols(java.util.List.of(okhttp3.Protocol.HTTP_1_1)) // Prevents protocol fallback issues
-                    .build();
-
-// 2. Explicitly append the strict HTTPS scheme to the baseUrl
-            ClientOptions options = ClientOptions.builder()
-                    .baseUrl("https://api.mailjet.com") // Ensure the "https://" prefix is present
-                    .apiKey(apiKey)
-                    .apiSecretKey(apiSecret)
-                    .okHttpClient(standardWebClient)
-                    .build();
-
-            MailjetClient client = new MailjetClient(options);
-
             TransactionalEmail message = TransactionalEmail
                     .builder()
                     .to(new SendContact(toEmail, toEmail))
@@ -60,13 +52,9 @@ public class EmailSenderService {
                             otp +
                             "</div>" +
                             "<p style=\"font-size: 14px; color: #888;\">This code will expire in <b>5 minutes</b>.</p>" +
-                            "<hr style=\"margin: 30px 0;\">" +
-                            "<p style=\"font-size: 12px; color: #aaa;\">If you didn’t request this, you can safely ignore this email.</p>" +
                             "</div>")
                     .subject("Your One-Time Password (OTP)")
                     .trackOpens(TrackOpens.ENABLED)
-                    .header("test-header-key", "test-value")
-                    .customID("custom-id-value")
                     .build();
 
             SendEmailsRequest request = SendEmailsRequest
@@ -74,12 +62,12 @@ public class EmailSenderService {
                     .message(message)
                     .build();
 
-            SendEmailsResponse responses = request.sendWith(client);
-            log.info("status for responses: {}", responses);
+            // Reuses the established client bean instance
+            SendEmailsResponse responses = request.sendWith(this.client);
+            log.info("Mailjet send response status: {}", responses);
 
-
-        } catch (MailjetException ex) {
-            log.error("MailjetException error message: [{}]", ex.getMessage());
+        } catch (Exception ex) {
+            log.error("Mailjet Communication Exception: {}", ex.getMessage());
             throw ex;
         }
     }

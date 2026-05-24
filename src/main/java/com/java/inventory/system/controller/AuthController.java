@@ -32,7 +32,7 @@ public class AuthController {
     }
 
     @PostMapping("/send-otp")
-    public ResponseEntity<?> sendOtpEmail(@RequestBody OtpVerificationRequest request) throws MailjetException {
+    public ResponseEntity<?> sendOtpEmail(@RequestBody OtpVerificationRequest request) throws Exception {
         return otpService.sendOtpEmail(request);
     }
 
