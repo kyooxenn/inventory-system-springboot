@@ -5,6 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.java.inventory.system.constant.InventoryConstant;
 import com.java.inventory.system.dto.OtpVerificationRequest;
 import com.java.inventory.system.security.JwtUtil;
+import com.resend.*;
+import com.resend.services.domains.model.CreateDomainOptions;
+import com.resend.services.domains.model.CreateDomainResponse;
+import com.resend.services.domains.model.Domain;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,7 +76,7 @@ public class OtpTest {
         OtpVerificationRequest otpVerificationRequest = new OtpVerificationRequest();
         otpVerificationRequest.setTempToken("12345");
         otpVerificationRequest.setOtp("123456");
-        otpVerificationRequest.setEmail("norbertbobila12@gmail.com");
+        otpVerificationRequest.setEmail("norbert@zip.ph");
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/send-otp")
                         .header("Authorization", token)
