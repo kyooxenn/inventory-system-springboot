@@ -41,7 +41,7 @@ public class OtpService {
                     .body(Map.of("error", "Invalid or expired session"));
         }
 
-        String attemptKey = "OTP_ATTEMPT:" + username;
+       /* String attemptKey = "OTP_ATTEMPT:" + username;
         String attemptCountStr = redisTemplate.opsForValue().get(attemptKey);
         int attemptCount = attemptCountStr != null ? Integer.parseInt(attemptCountStr) : 0;
 
@@ -61,7 +61,7 @@ public class OtpService {
 
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
                     .body(Map.of("error", timeMessage));
-        }
+        }*/
 
         // 🔹 Generate OTP
         String otp = OtpGenerator.generateOtp();
@@ -73,13 +73,13 @@ public class OtpService {
                 TimeUnit.MINUTES
         );
 
-        // 🔹 Increment attempt count with 10-minute expiry
+        /*// 🔹 Increment attempt count with 10-minute expiry
         redisTemplate.opsForValue().set(
                 attemptKey,
                 String.valueOf(attemptCount + 1),
                 10, // reset counter after 10 minutes
                 TimeUnit.MINUTES
-        );
+        );*/
 
         emailSenderService.sendOtpEmail(request.getEmail(), otp);
 
