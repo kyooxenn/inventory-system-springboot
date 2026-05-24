@@ -40,58 +40,21 @@ public class EmailSenderService {
 
             MailjetClient client = new MailjetClient(options);
 
-            MailjetRequest request = new MailjetRequest(Emailv31.resource)
-                    .property(Emailv31.MESSAGES, new JSONArray()
-                            .put(new JSONObject()
-                                    .put(Emailv31.Message.FROM, new JSONObject()
-                                            .put("Email", "norbertbobila12@gmail.com")
-                                            .put("Name", "Norbert Jon Bobila"))
-                                    .put(Emailv31.Message.TO, new JSONArray()
-                                            .put(new JSONObject()
-                                                    .put("Email", toEmail)
-                                                    .put("Name",toEmail)))
-                                    .put(Emailv31.Message.SUBJECT, "Your One-Time Password (OTP)")
-                                    .put(Emailv31.Message.HTMLPART, "<div style=\"font-family: Arial, sans-serif; text-align: center; padding: 20px;\">" +
-                                            "<h2 style=\"color: #333;\">Your One-Time Password</h2>" +
-                                            "<p style=\"font-size: 16px; color: #555;\">Use the code below to complete your verification:</p>" +
-                                            "<div style=\"font-size: 32px; font-weight: bold; letter-spacing: 6px; margin: 20px 0; color: #000;\">" +
-                                            otp +
-                                            "</div>" +
-                                            "<p style=\"font-size: 14px; color: #888;\">This code will expire in <b>5 minutes</b>.</p>" +
-                                            "<hr style=\"margin: 30px 0;\">" +
-                                            "<p style=\"font-size: 12px; color: #aaa;\">If you didn’t request this, you can safely ignore this email.</p>" +
-                                            "</div>")));
-
-
-            log.info("request for sendOtpEmail: {}", request);
-            MailjetResponse response = client.post(request);
-            log.info("status for sendOtpEmail: {}", response.getStatus());
-
-            if (HttpStatus.OK.value() != response.getStatus()) {
-                // Parse the JSON string
-                JsonObject jsonObject = JsonParser.parseString(response.getRawResponseContent()).getAsJsonObject();
-                // Get the "errors" array
-                JsonArray errorsArray = jsonObject.getAsJsonArray("errors");
-
-                // Check if the array has elements and extract the first error's message
-                if (!errorsArray.isEmpty()) {
-                    JsonObject firstError = errorsArray.get(0).getAsJsonObject();
-                    String message = firstError.get("message").getAsString();
-                    log.error("email jet error found: {}", message);
-                } else {
-                    log.info("No errors found for sendOtpEmail");
-                }
-            } else {
-                log.info("📧 Email sent to {} | Status: {}", toEmail, response.getStatus());
-            }
-
-
             TransactionalEmail message1 = TransactionalEmail
                     .builder()
                     .to(new SendContact(toEmail, toEmail))
-                    .from(new SendContact("norbertbobila12@gmail.com", "Mailjet integration test"))
-                    .htmlPart("<h1>This is the HTML content of the mail</h1>")
-                    .subject("This is the subject")
+                    .from(new SendContact("norbertbobila12@gmail.com", "Norbert Jon Bobila"))
+                    .htmlPart("<div style=\"font-family: Arial, sans-serif; text-align: center; padding: 20px;\">" +
+                            "<h2 style=\"color: #333;\">Your One-Time Password</h2>" +
+                            "<p style=\"font-size: 16px; color: #555;\">Use the code below to complete your verification:</p>" +
+                            "<div style=\"font-size: 32px; font-weight: bold; letter-spacing: 6px; margin: 20px 0; color: #000;\">" +
+                            otp +
+                            "</div>" +
+                            "<p style=\"font-size: 14px; color: #888;\">This code will expire in <b>5 minutes</b>.</p>" +
+                            "<hr style=\"margin: 30px 0;\">" +
+                            "<p style=\"font-size: 12px; color: #aaa;\">If you didn’t request this, you can safely ignore this email.</p>" +
+                            "</div>")
+                    .subject("Your One-Time Password (OTP)")
                     .trackOpens(TrackOpens.ENABLED)
                     .header("test-header-key", "test-value")
                     .customID("custom-id-value")
@@ -104,7 +67,6 @@ public class EmailSenderService {
 
             // act
             log.info("initiate SendEmailsRequest {}", requests);
-
             SendEmailsResponse responses = requests.sendWith(client);
             log.info("status for responses: {}", responses);
 
