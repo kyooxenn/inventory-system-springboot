@@ -4,9 +4,9 @@ WORKDIR /app
 COPY . .
 RUN mvn clean package -DskipTests
 
-# Stage 2: Run the application (Changed from alpine to jammy)
+# Stage 2: Run the application
 FROM eclipse-temurin:17-jdk-jammy
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-Djavax.net.debug=ssl:handshake", "-Dhttps.protocols=TLSv1.2,TLSv1.3", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/urandom", "-jar", "app.jar"]
