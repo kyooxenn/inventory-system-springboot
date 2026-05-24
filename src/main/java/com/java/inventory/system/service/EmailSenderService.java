@@ -12,6 +12,13 @@ import com.mailjet.client.transactional.response.SendEmailsResponse;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.OkHttpClient;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -30,12 +37,51 @@ public class EmailSenderService {
 
     @PostConstruct
     public void init() {
-        ClientOptions options = ClientOptions.builder()
-                .apiKey(apiKey)
-                .apiSecretKey(apiSecret)
-                .build();
+        try {
+            // 1. Create a trust manager that does not validate certificate chains
+            TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        @Override
+                        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
+                        @Override
+                        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
+                        @Override
+                        public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[]{}; }
+                    }
+            };
 
-        this.client = new MailjetClient(options);
+            // 2. Install the open trust manager into an SSL context
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+
+            // 3. Build a custom OkHttpClient using the relaxed SSL context
+            OkHttpClient relaxedClient = new OkHttpClient.Builder()
+                    .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustAllCerts[0])
+                    .hostnameVerifier((hostname, session) -> true) // Bypass hostname matching
+                    .connectTimeout(30, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    .build();
+
+            // 4. Force Mailjet options to use standard HTTPS endpoint and our open client
+            ClientOptions options = ClientOptions.builder()
+                    .baseUrl("https://mailjet.com")
+                    .apiKey(apiKey)
+                    .apiSecretKey(apiSecret)
+                    .okHttpClient(relaxedClient)
+                    .build();
+
+            this.client = new MailjetClient(options);
+            log.info("MailjetClient initialized successfully with relaxed SSL options.");
+
+        } catch (Exception e) {
+            log.error("Failed to configure relaxed Mailjet SSL context. Falling back to default client configuration.", e);
+            // Fallback initialization if something fails
+            ClientOptions options = ClientOptions.builder()
+                    .apiKey(apiKey)
+                    .apiSecretKey(apiSecret)
+                    .build();
+            this.client = new MailjetClient(options);
+        }
     }
 
     public void sendOtpEmail(String toEmail, String otp) throws MailjetClientCommunicationException, MailjetException {
