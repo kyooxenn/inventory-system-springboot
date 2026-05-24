@@ -10,8 +10,11 @@ import com.mailjet.client.transactional.TransactionalEmail;
 import com.mailjet.client.transactional.response.SendEmailsResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.OkHttpClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -27,9 +30,20 @@ public class EmailSenderService {
     public void sendOtpEmail(String toEmail, String otp) throws MailjetException {
         try {
 
+            // Force a standard web-safe OkHttpClient that only talks via HTTPS (Port 443)
+            OkHttpClient standardWebClient = new OkHttpClient.Builder()
+                    .connectTimeout(20, TimeUnit.SECONDS)
+                    .readTimeout(20, TimeUnit.SECONDS)
+                    .writeTimeout(20, TimeUnit.SECONDS)
+                    .retryOnConnectionFailure(true)
+                    .build();
+
+// Explicitly pass the base HTTPS API URL to skip any SMTP fallback checks
             ClientOptions options = ClientOptions.builder()
+                    .baseUrl("https://api.mailjet.com")
                     .apiKey(apiKey)
                     .apiSecretKey(apiSecret)
+                    .okHttpClient(standardWebClient)
                     .build();
 
             MailjetClient client = new MailjetClient(options);
