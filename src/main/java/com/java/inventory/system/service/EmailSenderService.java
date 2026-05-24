@@ -30,17 +30,18 @@ public class EmailSenderService {
     public void sendOtpEmail(String toEmail, String otp) throws MailjetException {
         try {
 
-            // Force a standard web-safe OkHttpClient that only talks via HTTPS (Port 443)
+            // 1. Force the OkHttpClient to strictly enforce TLS over HTTPS
             OkHttpClient standardWebClient = new OkHttpClient.Builder()
                     .connectTimeout(20, TimeUnit.SECONDS)
                     .readTimeout(20, TimeUnit.SECONDS)
                     .writeTimeout(20, TimeUnit.SECONDS)
                     .retryOnConnectionFailure(true)
+                    .protocols(java.util.List.of(okhttp3.Protocol.HTTP_1_1)) // Prevents protocol fallback issues
                     .build();
 
-// Explicitly pass the base HTTPS API URL to skip any SMTP fallback checks
+// 2. Explicitly append the strict HTTPS scheme to the baseUrl
             ClientOptions options = ClientOptions.builder()
-                    .baseUrl("https://api.mailjet.com")
+                    .baseUrl("https://api.mailjet.com") // Ensure the "https://" prefix is present
                     .apiKey(apiKey)
                     .apiSecretKey(apiSecret)
                     .okHttpClient(standardWebClient)
