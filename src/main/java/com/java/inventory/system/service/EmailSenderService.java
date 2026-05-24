@@ -8,13 +8,15 @@ import com.mailjet.client.MailjetClient;
 import com.mailjet.client.MailjetRequest;
 import com.mailjet.client.MailjetResponse;
 import com.mailjet.client.errors.MailjetException;
-import com.mailjet.client.resource.Email;
 import com.mailjet.client.resource.Emailv31;
+import com.mailjet.client.transactional.*;
+import com.mailjet.client.transactional.response.SendEmailsResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -38,7 +40,7 @@ public class EmailSenderService {
 
             MailjetClient client = new MailjetClient(options);
 
-            MailjetRequest request = new MailjetRequest(Email.resource)
+            MailjetRequest request = new MailjetRequest(Emailv31.resource)
                     .property(Emailv31.MESSAGES, new JSONArray()
                             .put(new JSONObject()
                                     .put(Emailv31.Message.FROM, new JSONObject()
@@ -61,12 +63,11 @@ public class EmailSenderService {
                                             "</div>")));
 
 
+            log.info("request for sendOtpEmail: {}", request);
             MailjetResponse response = client.post(request);
-
             log.info("status for sendOtpEmail: {}", response.getStatus());
 
-            if (response.getStatus() == 401 || response.getStatus() == 403) {
-
+            if (HttpStatus.OK.value() != response.getStatus()) {
                 // Parse the JSON string
                 JsonObject jsonObject = JsonParser.parseString(response.getRawResponseContent()).getAsJsonObject();
                 // Get the "errors" array
@@ -76,16 +77,40 @@ public class EmailSenderService {
                 if (!errorsArray.isEmpty()) {
                     JsonObject firstError = errorsArray.get(0).getAsJsonObject();
                     String message = firstError.get("message").getAsString();
-                    log.error("error: {}", message);
+                    log.error("email jet error found: {}", message);
                 } else {
                     log.info("No errors found for sendOtpEmail");
                 }
             } else {
                 log.info("📧 Email sent to {} | Status: {}", toEmail, response.getStatus());
             }
+
+
+            TransactionalEmail message1 = TransactionalEmail
+                    .builder()
+                    .to(new SendContact(toEmail, toEmail))
+                    .from(new SendContact("norbertbobila12@gmail.com", "Mailjet integration test"))
+                    .htmlPart("<h1>This is the HTML content of the mail</h1>")
+                    .subject("This is the subject")
+                    .trackOpens(TrackOpens.ENABLED)
+                    .header("test-header-key", "test-value")
+                    .customID("custom-id-value")
+                    .build();
+
+            SendEmailsRequest requests = SendEmailsRequest
+                    .builder()
+                    .message(message1) // you can add up to 50 messages per request
+                    .build();
+
+            // act
+            log.info("initiate SendEmailsRequest {}", requests);
+
+            SendEmailsResponse responses = requests.sendWith(client);
+            log.info("status for responses: {}", responses);
+
+
         } catch (MailjetException ex) {
-            log.error("Mailjet error messsage: {}", ex.getMessage());
-            log.error("Mailjet error cause: {}", ex.getCause().toString());
+            log.error("Mailjet error messsage: [{}]", ex.getMessage());
             throw ex;
         }
     }
