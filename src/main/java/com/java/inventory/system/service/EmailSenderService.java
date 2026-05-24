@@ -8,6 +8,7 @@ import com.mailjet.client.MailjetClient;
 import com.mailjet.client.MailjetRequest;
 import com.mailjet.client.MailjetResponse;
 import com.mailjet.client.errors.MailjetException;
+import com.mailjet.client.resource.Email;
 import com.mailjet.client.resource.Emailv31;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +38,7 @@ public class EmailSenderService {
 
             MailjetClient client = new MailjetClient(options);
 
-            MailjetRequest request = new MailjetRequest(Emailv31.resource)
+            MailjetRequest request = new MailjetRequest(Email.resource)
                     .property(Emailv31.MESSAGES, new JSONArray()
                             .put(new JSONObject()
                                     .put(Emailv31.Message.FROM, new JSONObject()
@@ -83,7 +84,8 @@ public class EmailSenderService {
                 log.info("📧 Email sent to {} | Status: {}", toEmail, response.getStatus());
             }
         } catch (MailjetException ex) {
-            log.error("Mailjet error: {}", ex.getMessage());
+            log.error("Mailjet error messsage: {}", ex.getMessage());
+            log.error("Mailjet error cause: {}", ex.getCause().toString());
             throw ex;
         }
     }
