@@ -115,6 +115,13 @@ public class AuthService {
                         .body(Map.of("error", "This email is already registered. Please use a different email address."));
             }
 
+            // Check if mobile number already exists
+            if (userRepository.findByMobile(request.getMobile()).isPresent()) {
+                return ResponseEntity
+                        .status(HttpStatus.CONFLICT)
+                        .body(Map.of("error", "This mobile is already registered. Please use a different mobile number."));
+            }
+
             // Create and save new user
             User user = new User();
             user.setUsername(request.getUsername());
