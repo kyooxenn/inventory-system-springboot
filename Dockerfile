@@ -9,4 +9,4 @@ FROM eclipse-temurin:17-jdk-jammy
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-Dhttps.protocols=TLSv1.2,TLSv1.3", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Djavax.net.debug=ssl:handshake", "-Dhttps.protocols=TLSv1.2,TLSv1.3", "-jar", "app.jar"]
