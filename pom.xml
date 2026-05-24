@@ -46,18 +46,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
-        <!-- Source: https://mvnrepository.com/artifact/com.mailjet/mailjet-client -->
-        <dependency>
-            <groupId>com.mailjet</groupId>
-            <artifactId>mailjet-client</artifactId>
-            <version>6.0.0</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.10.1</version>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/com.twilio.sdk/twilio -->
         <dependency>
             <groupId>org.telegram</groupId>
