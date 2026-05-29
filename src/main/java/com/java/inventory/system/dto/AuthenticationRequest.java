@@ -3,7 +3,7 @@ package com.java.inventory.system.dto;
 import lombok.Data;
 
 @Data
-public class AuthRequest {
+public class AuthenticationRequest {
     String username;
     String password;
     String email;

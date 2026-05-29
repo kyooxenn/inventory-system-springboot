@@ -2,7 +2,7 @@ package com.java.inventory.system.service;
 
 import com.java.inventory.system.dto.ProductRequest;
 import com.java.inventory.system.exception.ProductSvcException;
-import com.java.inventory.system.exception.errortypes.ProductSvcErrorType;
+import com.java.inventory.system.exception.errortypes.NVentSvcErrorType;
 import com.java.inventory.system.model.Product;
 import com.java.inventory.system.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.java.inventory.system.exception.errortypes.ProductSvcErrorType.ERR_INVENTORY_MS_NO_PRODUCT_FOUND;
+import static com.java.inventory.system.exception.errortypes.NVentSvcErrorType.ERR_INVENTORY_MS_NO_PRODUCT_FOUND;
 
 @Slf4j
 @Service
@@ -71,7 +71,7 @@ public class ProductService {
     public Product createProduct(ProductRequest request) throws ProductSvcException {
         productRepository.findByItemName(request.getItemName())
                 .ifPresent(p -> {
-                    throw new ProductSvcException(ProductSvcErrorType.ERR_INVENTORY_MS_PRODUCT_EXIST);
+                    throw new ProductSvcException(NVentSvcErrorType.ERR_INVENTORY_MS_PRODUCT_EXIST);
                 });
 
         Product newProduct = Product.builder()
@@ -105,7 +105,7 @@ public class ProductService {
             log.info("Validating if the product exists...");
             productRepository.findByItemName(newName)
                     .ifPresent(p -> {
-                        throw new ProductSvcException(ProductSvcErrorType.ERR_INVENTORY_MS_PRODUCT_EXIST);
+                        throw new ProductSvcException(NVentSvcErrorType.ERR_INVENTORY_MS_PRODUCT_EXIST);
                     });
         }
 

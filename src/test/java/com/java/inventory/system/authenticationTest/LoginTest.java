@@ -1,10 +1,11 @@
-package com.java.inventory.system.sendOtpTest;
-
+package com.java.inventory.system.authenticationTest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.java.inventory.system.constant.InventoryConstant;
+import com.java.inventory.system.dto.AuthenticationRequest;
 import com.java.inventory.system.dto.OtpVerificationRequest;
 import com.java.inventory.system.repository.ProductRepository;
+import com.java.inventory.system.repository.UserRepository;
 import com.java.inventory.system.security.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.mockwebserver.MockWebServer;
@@ -18,6 +19,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -30,8 +32,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Slf4j
+@Sql("/testData/user.sql")
 @ActiveProfiles("test")
-public class OtpTest {
+public class LoginTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -68,24 +71,26 @@ public class OtpTest {
     }
 
     @AfterEach
-    void shutDown() throws IOException {
+    void shutDown(
+            @Autowired UserRepository userRepository
+    ) throws IOException {
+        userRepository.deleteAll();
         mockWebServer.shutdown();
     }
 
     @Test
-    @DisplayName("sendOtpEmail")
-    void sendOtpEmail() throws Exception {
+    @DisplayName("loginUser")
+    void loginTest() throws Exception {
+        AuthenticationRequest authenticationRequest = new AuthenticationRequest();
+        authenticationRequest.setUsername("admin_user");
+        authenticationRequest.setPassword("encoded_admin_pass1");
 
-        OtpVerificationRequest otpVerificationRequest = new OtpVerificationRequest();
-        otpVerificationRequest.setTempToken("12345");
-        otpVerificationRequest.setOtp("123456");
-        otpVerificationRequest.setEmail("norbert@zip.ph");
-
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/send-otp")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/login")
                         .header("Authorization", token)
-                        .content(objectMapper.writeValueAsString(otpVerificationRequest))
+                        .content(objectMapper.writeValueAsString(authenticationRequest))
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isOk())
+                .andExpect(status().is4xxClientError())
                 .andDo(print());
     }
 }
+

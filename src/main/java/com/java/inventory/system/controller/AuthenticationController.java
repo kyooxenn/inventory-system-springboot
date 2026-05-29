@@ -1,9 +1,10 @@
 package com.java.inventory.system.controller;
 
-import com.java.inventory.system.dto.AuthRequest;
+import com.java.inventory.system.dto.AuthenticationRequest;
 import com.java.inventory.system.dto.OtpVerificationRequest;
 import com.java.inventory.system.service.AuthService;
 import com.java.inventory.system.service.OtpService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,28 +14,29 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth")
 @CrossOrigin
 @RequiredArgsConstructor
-public class AuthController {
+public class AuthenticationController {
 
   private final AuthService authService;
   private final OtpService otpService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody AuthRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody AuthenticationRequest request) {
         return authService.login(request);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody AuthRequest request) {
+    public ResponseEntity<?> register(@Valid @RequestBody AuthenticationRequest request) {
         return authService.register(request);
     }
 
     @PostMapping("/send-otp")
-    public ResponseEntity<?> sendOtpEmail(@RequestBody OtpVerificationRequest request) {
-        return otpService.sendOtpEmail(request);
+    public ResponseEntity<?> sendOtpEmail(@RequestBody OtpVerificationRequest request,
+                                          HttpServletRequest servletRequest) {
+        return otpService.sendOtp(request, servletRequest);
     }
 
     @PostMapping("/verify-otp")
     public ResponseEntity<?> verifyOtp(@RequestBody OtpVerificationRequest request) {
-        return otpService.verifyOtp(request);
+        return otpService.validateOtp(request);
     }
 }

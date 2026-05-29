@@ -15,6 +15,11 @@ public class BaseException extends RuntimeException {
         super();
     }
 
+    public BaseException(ErrorType error, Object... params) {
+        super(String.format(error == null ? StringUtils.EMPTY : error.getDesc(), params));
+        this.error = error;
+    }
+
     public BaseException(ErrorType error) {
         super(error == null ? StringUtils.EMPTY : error.getDesc());
         this.error = error;

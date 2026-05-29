@@ -278,22 +278,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Product"
-  /api/telegram/send-otp:
-    post:
-      tags:
-      - telegram-otp-controller
-      operationId: sendOtpTelegram
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
   /api/auth/verify-otp:
     post:
       tags:
-      - auth-controller
+      - authentication-controller
       operationId: verifyOtp
       requestBody:
         content:
@@ -311,7 +299,7 @@ paths:
   /api/auth/send-otp:
     post:
       tags:
-      - auth-controller
+      - authentication-controller
       operationId: sendOtpEmail
       requestBody:
         content:
@@ -329,13 +317,13 @@ paths:
   /api/auth/register:
     post:
       tags:
-      - auth-controller
+      - authentication-controller
       operationId: register
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AuthRequest"
+              $ref: "#/components/schemas/AuthenticationRequest"
         required: true
       responses:
         "200":
@@ -347,13 +335,13 @@ paths:
   /api/auth/login:
     post:
       tags:
-      - auth-controller
+      - authentication-controller
       operationId: login
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AuthRequest"
+              $ref: "#/components/schemas/AuthenticationRequest"
         required: true
       responses:
         "200":
@@ -447,50 +435,6 @@ paths:
                 type: object
                 additionalProperties:
                   type: object
-  /api/telegram/link-status/{code}:
-    get:
-      tags:
-      - telegram-otp-controller
-      operationId: getTelegramLinkStatus
-      parameters:
-      - name: code
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
-  /api/telegram/generate-link-code:
-    get:
-      tags:
-      - telegram-otp-controller
-      operationId: generateLinkCode
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
-                additionalProperties:
-                  type: string
-  /api/telegram/check-link:
-    get:
-      tags:
-      - telegram-otp-controller
-      operationId: checkLink
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: boolean
   /api/health:
     get:
       tags:
@@ -562,7 +506,7 @@ components:
           type: string
         mobile:
           type: string
-    AuthRequest:
+    AuthenticationRequest:
       type: object
       properties:
         username:

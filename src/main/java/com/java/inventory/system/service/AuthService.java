@@ -1,8 +1,9 @@
 package com.java.inventory.system.service;
 
 import com.java.inventory.system.constant.InventoryConstant;
-import com.java.inventory.system.dto.AuthRequest;
-import com.java.inventory.system.model.AuthResponse;
+import com.java.inventory.system.dto.AuthenticationRequest;
+import com.java.inventory.system.exception.BaseException;
+import com.java.inventory.system.exception.ErrorType;
 import com.java.inventory.system.model.User;
 import com.java.inventory.system.repository.UserRepository;
 import com.java.inventory.system.security.JwtUtil;
@@ -28,6 +29,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static com.java.inventory.system.exception.errortypes.NVentSvcErrorType.*;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -40,7 +43,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final StringRedisTemplate redisTemplate;
 
-    public ResponseEntity<?> login(AuthRequest request) {
+    public ResponseEntity<?> login(AuthenticationRequest request) {
         try {
             // check username and password input if valid else return BadCredentialsException
             Authentication authentication = authenticationManager.authenticate(
@@ -67,22 +70,18 @@ public class AuthService {
                             "email", user.getEmail()
                     ));
         } catch (BadCredentialsException e) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Invalid username or password"));
+            log.error("BadCredentialsException: {}", e.getMessage());
+            throw new BaseException(ERR_CLIENT_INVALID_CREDENTIALS);
         } catch (UsernameNotFoundException e) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", e.getMessage()));
+            log.error("UsernameNotFoundException: {}", e.getMessage());
+            throw new BaseException(ERR_CLIENT_USER_NOT_FOUND);
         } catch (Exception e) {
             log.error("Login failed: {}", e.getMessage());
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "An unexpected error occurred"));
+            throw new BaseException(INTERNAL_SERVER_ERR);
         }
     }
 
-    public ResponseEntity<?> register(@Valid @RequestBody AuthRequest request) {
+    public ResponseEntity<?> register(@Valid @RequestBody AuthenticationRequest request) {
         try {
             // 1. Check username and get the user if exists
             Optional<User> existingUserOpt = userRepository.findByUsername(request.getUsername());
@@ -92,7 +91,7 @@ public class AuthService {
             if (existingUserOpt.isPresent()) {
                 User existingUser = existingUserOpt.get();
                 if (BooleanUtils.isTrue(existingUser.getIsVerified())) {
-                    return conflictResponse("Username already exists");
+                    throw conflictResponse(ERR_CLIENT_CREDENTIALS_EXISTS,"Username already exists");
                 }
                 // Unverified user – we will update it
                 targetUser = existingUser;
@@ -102,12 +101,12 @@ public class AuthService {
             // 2. Uniqueness checks for email and mobile (excluding the target user if updating)
             Optional<User> emailUser = userRepository.findByEmail(request.getEmail());
             if (emailUser.isPresent() && (targetUser == null || !emailUser.get().getId().equals(targetUser.getId()))) {
-                return conflictResponse("This email is already registered. Please use a different email address.");
+                throw conflictResponse(ERR_CLIENT_CREDENTIALS_EXISTS,"This email is already registered. Please use a different email address.");
             }
 
             Optional<User> mobileUser = userRepository.findByMobile(request.getMobile());
             if (mobileUser.isPresent() && (targetUser == null || !mobileUser.get().getId().equals(targetUser.getId()))) {
-                return conflictResponse("This mobile is already registered. Please use a different mobile number.");
+                throw conflictResponse(ERR_CLIENT_CREDENTIALS_EXISTS,"This mobile is already registered. Please use a different mobile number.");
             }
 
             // 3. Create or update the user
@@ -150,20 +149,20 @@ public class AuthService {
         } catch (DataIntegrityViolationException e) {
             // This handles rare race conditions where email/mobile was taken between check and save
             log.error("Data integrity violation during registration", e);
-            return conflictResponse("Email or mobile number already exists. Please use different credentials.");
+            throw new BaseException(ERR_CLIENT_CREDENTIALS_EXISTS);
         } catch (Exception e) {
             log.error("Unexpected error during registration", e);
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "An unexpected error occurred. Please try again later."));
+            throw new BaseException(INTERNAL_SERVER_ERR);
         }
     }
 
-    // Helper method for consistent conflict responses
-    private ResponseEntity<Map<String, String>> conflictResponse(String errorMessage) {
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(Map.of("error", errorMessage));
+    private BaseException conflictResponse(ErrorType error, String errorMessage) {
+        return new BaseException(error) {
+            @Override
+            public String getMessage() {
+                return errorMessage;
+            }
+        };
     }
 
 }
