@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 @RestController
 @RequestMapping("/api/telegram")
 @RequiredArgsConstructor
-public class TelegramOtpController {
+public class TelegramController {
 
     private final StringRedisTemplate redisTemplate;
     private final CustomUserDetailsService userService; // For getting chatId
