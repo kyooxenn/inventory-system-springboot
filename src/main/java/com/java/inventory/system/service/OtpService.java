@@ -127,7 +127,7 @@ public class OtpService {
 
     private BaseException createRateLimitException(ErrorType error, long minutes, long seconds) {
         String formattedMessage = String.format(error.getDesc(), minutes, seconds);
-
+        log.error(formattedMessage);
         // Use reflection or create a new exception (if you have a constructor with message)
         return new BaseException(error) {
             @Override
