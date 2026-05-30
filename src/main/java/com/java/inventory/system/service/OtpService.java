@@ -25,6 +25,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.server.ResponseStatusException;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.List;
@@ -218,7 +219,9 @@ public class OtpService {
         message.setText("Your OTP is: " + otp + ". It expires in 5 minutes.");
 
         try {
-            telegramBot.execute(message);
+           Message response = telegramBot.execute(message);
+            log.info("OTP sent successfully via telegram to: {}. Contact: {}", response.getContact().getFirstName(),
+                    response.getContact().getPhoneNumber());
         } catch (TelegramApiException e) {
             log.error("error: {}", e.getMessage());
         }
