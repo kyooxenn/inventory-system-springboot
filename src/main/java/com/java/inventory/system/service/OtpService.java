@@ -219,9 +219,8 @@ public class OtpService {
         message.setText("Your OTP is: " + otp + ". It expires in 5 minutes.");
 
         try {
-           Message response = telegramBot.execute(message);
-            log.info("OTP sent successfully via telegram to: {}. Contact: {}", response.getContact().getFirstName(),
-                    response.getContact().getPhoneNumber());
+            telegramBot.execute(message);
+            log.info("OTP sent successfully via telegram.");
         } catch (TelegramApiException e) {
             log.error("error: {}", e.getMessage());
         }
