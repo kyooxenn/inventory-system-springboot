@@ -4,6 +4,7 @@ import com.java.inventory.system.constant.InventoryConstant;
 import com.java.inventory.system.dto.AuthenticationRequest;
 import com.java.inventory.system.exception.BaseException;
 import com.java.inventory.system.exception.ErrorType;
+import com.java.inventory.system.model.AuthResponse;
 import com.java.inventory.system.model.User;
 import com.java.inventory.system.repository.UserRepository;
 import com.java.inventory.system.security.JwtUtil;
@@ -56,9 +57,8 @@ public class AuthService {
 
             if ("admin".equals(user.getUsername())) {
                 // skip otp verification
-                return ResponseEntity
-                        .status(HttpStatus.OK)
-                        .body(Map.of("email", user.getEmail()));
+                String jwt = jwtUtil.generateToken(user.getUsername(), user.getRoles());
+                return ResponseEntity.ok(new AuthResponse(jwt));
             } else {
                 String tempToken = UUID.randomUUID().toString();
 
