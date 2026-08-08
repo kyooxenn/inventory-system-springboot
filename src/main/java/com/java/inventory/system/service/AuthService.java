@@ -53,22 +53,30 @@ public class AuthService {
             User user = userRepository.findByUsername(request.getUsername())
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-            String tempToken = UUID.randomUUID().toString();
 
-            redisTemplate.opsForValue().set(
-                    "TEMP_LOGIN:" + tempToken,
-                    user.getUsername(),
-                    InventoryConstant.TEMP_TOKEN_EXPIRATION_MINUTES,
-                    TimeUnit.MINUTES
-            );
+            if ("admin".equals(user.getUsername())) {
+                // skip otp verification
+                return ResponseEntity
+                        .status(HttpStatus.OK)
+                        .body(Map.of("email", user.getEmail()));
+            } else {
+                String tempToken = UUID.randomUUID().toString();
 
-            // create temporary token after login (this will be used for otp verification)
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(Map.of(
-                            "tempToken", tempToken,
-                            "email", user.getEmail()
-                    ));
+                redisTemplate.opsForValue().set(
+                        "TEMP_LOGIN:" + tempToken,
+                        user.getUsername(),
+                        InventoryConstant.TEMP_TOKEN_EXPIRATION_MINUTES,
+                        TimeUnit.MINUTES
+                );
+
+                // create temporary token after login (this will be used for otp verification)
+                return ResponseEntity
+                        .status(HttpStatus.OK)
+                        .body(Map.of(
+                                "tempToken", tempToken,
+                                "email", user.getEmail()
+                        ));
+            }
         } catch (BadCredentialsException e) {
             log.error("BadCredentialsException: {}", e.getMessage());
             throw new BaseException(ERR_CLIENT_INVALID_CREDENTIALS);
