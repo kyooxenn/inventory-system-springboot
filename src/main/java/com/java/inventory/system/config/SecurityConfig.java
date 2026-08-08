@@ -127,7 +127,8 @@ public class SecurityConfig {
 
         config.setAllowedOrigins(List.of(
                 "https://react-inventory-system.onrender.com", // your deployed frontend
-                "http://localhost:5173" // for local dev
+                "http://localhost:5173", // for local dev
+                "https://localhost"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
