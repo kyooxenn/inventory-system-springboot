@@ -435,6 +435,50 @@ paths:
                 type: object
                 additionalProperties:
                   type: object
+  /api/telegram/link-status/{code}:
+    get:
+      tags:
+      - telegram-controller
+      operationId: getTelegramLinkStatus
+      parameters:
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/telegram/generate-link-code:
+    get:
+      tags:
+      - telegram-controller
+      operationId: generateLinkCode
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+  /api/telegram/check-link:
+    get:
+      tags:
+      - telegram-controller
+      operationId: checkLink
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: boolean
   /api/health:
     get:
       tags:
