@@ -159,10 +159,7 @@ public class AuthService {
             // This handles rare race conditions where email/mobile was taken between check and save
             log.error("Data integrity violation during registration", e);
             throw new BaseException(ERR_CLIENT_CREDENTIALS_EXISTS);
-        } /*catch (Exception e) {
-            log.error("Unexpected error during registration", e);
-            throw new BaseException(INTERNAL_SERVER_ERR);
-        }*/
+        }
     }
 
 }

@@ -66,14 +66,8 @@ public class ControllerAdvice {
     public final ResponseEntity<ExceptionResponse> handleBaseException(BaseException ex, WebRequest request) {
         // Log the exception with appropriate level
         ErrorType error = ex.getError();
-
-        log.error("this error {}", error);
-
         String errorCode = error != null ? error.getCode() : "BASE_EXCEPTION";
         String errorMessage = ex.getMessage();
-
-        log.error("errordES: {} errormessage: {}", error.getDesc(), errorMessage);
-
         log.error("BaseException occurred - Code: {}, Message: {}, Field: {}",
                 errorCode, errorMessage, ex.getFieldName());
 
