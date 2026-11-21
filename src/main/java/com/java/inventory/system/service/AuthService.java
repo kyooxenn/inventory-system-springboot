@@ -99,7 +99,7 @@ public class AuthService {
             if (existingUserOpt.isPresent()) {
                 User existingUser = existingUserOpt.get();
                 if (BooleanUtils.isTrue(existingUser.getIsVerified())) {
-                    throw conflictResponse(ERR_CLIENT_CREDENTIALS_EXISTS,"Username already exists");
+                    throw new BaseException(ERR_CLIENT_CREDENTIALS_EXISTS,"Username already exists");
                 }
                 // Unverified user – we will update it
                 targetUser = existingUser;
@@ -109,12 +109,13 @@ public class AuthService {
             // 2. Uniqueness checks for email and mobile (excluding the target user if updating)
             Optional<User> emailUser = userRepository.findByEmail(request.getEmail());
             if (emailUser.isPresent() && (targetUser == null || !emailUser.get().getId().equals(targetUser.getId()))) {
-                throw conflictResponse(ERR_CLIENT_CREDENTIALS_EXISTS,"This email is already registered. Please use a different email address.");
+                throw new BaseException(ERR_CLIENT_CREDENTIALS_EXISTS, "This email is already registered. Please use a different email address.");
+
             }
 
             Optional<User> mobileUser = userRepository.findByMobile(request.getMobile());
             if (mobileUser.isPresent() && (targetUser == null || !mobileUser.get().getId().equals(targetUser.getId()))) {
-                throw conflictResponse(ERR_CLIENT_CREDENTIALS_EXISTS,"This mobile is already registered. Please use a different mobile number.");
+                throw new BaseException(ERR_CLIENT_CREDENTIALS_EXISTS, "This mobile is already registered. Please use a different mobile number.");
             }
 
             // 3. Create or update the user
@@ -162,15 +163,6 @@ public class AuthService {
             log.error("Unexpected error during registration", e);
             throw new BaseException(INTERNAL_SERVER_ERR);
         }
-    }
-
-    private BaseException conflictResponse(ErrorType error, String errorMessage) {
-        return new BaseException(error) {
-            @Override
-            public String getMessage() {
-                return errorMessage;
-            }
-        };
     }
 
 }
