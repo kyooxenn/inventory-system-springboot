@@ -69,6 +69,8 @@ public class ControllerAdvice {
         String errorCode = error != null ? error.getCode() : "BASE_EXCEPTION";
         String errorMessage = ex.getMessage();
 
+        log.error("errordES: {} errormessage: {}", error.getDesc(), errorMessage);
+
         log.error("BaseException occurred - Code: {}, Message: {}, Field: {}",
                 errorCode, errorMessage, ex.getFieldName());
 
